@@ -1,0 +1,759 @@
+--超市管理系统表的初使化
+
+--注意不可随便改表结构,有自已的想法说一下,再来统一更改
+-------------------------------------------------------------
+--1)  商品属性表 (tb_spinfo) ----------------------注册
+
+
+  --(  商品编号 ,商品名称,单价,类别,条码,单位,单位关系,预设进价,预设售价,规格型号,颜色,  最低库存, 是否特价商品,  商品折扣, 会员价, 特价, 特价期限,开始日期,结束日期, 状态,打折率,生产厂商,备注,所属仓库)
+            
+create table tb_spinfo(
+      sp_Id varchar2(7) constraint sp_info_pk primary key,   --商品编号
+      sp_Name varchar2(50) constraint sp_name_nn not null,  --商品名称
+      sp_dj number(7,2),              --单价
+      sp_lb varchar2(20) references tb_sblb(sblb_Id),      --类别
+      sp_tm varchar2(7),               --条码
+      sp_dw varchar2(4),           --单位
+      sp_dwgx varchar2(20),            --单位关系
+      sp_jj number(7,2),             --预设进价
+      sp_sj number(7,2),          -- 预设售价
+      sp_ggxh varchar2(20),           --规格型号
+      sp_color varchar2(5),         -- 颜色
+      sp_zdkc number(4),           --最低库存
+      sp_sftj number(1),           --是否特价商品
+      sp_zk number(2,1),         --商品折扣
+      sp_hyj number(7,2),         --会员价
+      sp_tj number(7,2),           --特价
+      sp_tjdateFrom date,           --开始日期
+      sp_tjdateTo date,         --结束日期
+      sp_isuse varchar2(1),       --状态
+      sp_dzl number(2,1),         --打折率
+      sp_sccs varchar2(50),        --生产厂商
+      sp_bz varchar2(50)        --备注
+      sp_syck varchar2(3) references tb_ckinfo(ck_Id),  --所属仓库
+      );
+--商品拆扣的限制
+ALTER TABLE tb_spjw         
+  ADD CONSTRAINTS SPJW_SC_C CHECK (sp_zk >0 and sp_zk <=1.0);
+  
+ --查看表全部数据        
+select * from tb_spinfo;
+--删除表
+drop table tb_spinfo;     
+-------------------------------------------------------------
+
+  
+--3)  客户 ( tb_khinfo) ------------------------------注册
+-- ( 客户号, 客户名, 联系人, 电话, 我方应收金额, 联系地址,默认客户,禁用,备注 ) 
+create table tb_khinfo(
+      kh_Id varchar2(4)  primary key, --客户号
+      kh_Name varchar2(20),       --客户名
+      kh_lxr varchar2(20),         --联系人
+      kh_tell varchar2(11),         --电话
+      kh_ysjy number(7,2),         --我方应收金额
+      kh_address varchar2(50),         --联系地址
+      kh_mrkh varchar2(2),         --默认客户
+      kh_jyf varchar2(2),          --禁用否
+      kh_bz varchar2(50)        --备注
+      );
+--查看表全部数据        
+select * from tb_khinfo;
+--删除表
+drop table tb_khinfo;     
+-------------------------------------------------------------     
+--4)  供货商  ( tb_ghsinfo)     --------------注册
+--    (ID, 供货商名,联系人, 联系电话, 
+--   联系地址, 我方应付金额, 默认供货商,禁用否,备注)
+
+create table tb_ghsinfo(
+      ghs_Id varchar2(7)  primary key,    --ID
+      ghs_Name varchar2(50) not null,     --供货商名
+      ghs_lxr varchar2(20),         --联系人
+      ghs_tell varchar2(11),         --联系电话
+      ghs_address varchar2(50),       --联系地址
+      ghs_yfjy number(7,2),         --我方应付金额
+      ghs_ismr varchar2(2),         --默认供货商
+      ghs_jyf varchar2(2),           --禁用否
+      ghs_bz varchar2(50)         --备注
+      );
+
+ --查看表全部数据        
+select * from tb_ghsinfo;
+--删除表
+drop table tb_ghsinfo;     
+-------------------------------------------------------------
+--5)  采购主表 ( tb_cg_main)--------------注册
+--  (  单号, 开单日期, 供货商,入库名称, 应付金额, 实付金额,优惠金额
+--     经办人 ,  操作员   备注 )
+
+create table tb_cg_main(
+      cg_Id varchar2(14) constraint cg_info_pk primary key, --单号
+      cg_date date,       --开单日期
+      cg_ghs varchar2(7)  REFERENCES tb_ghsinfo(ghs_Id),  -- 供货商
+      cg_lkName varchar2(3) references tb_ckinfo(ck_ID),   --入库名称
+      cg_yfje number(7,2),           --应付金额
+      cg_sfje number(7,2),           --实付金额
+      cg_yhje number(7,2),               --优惠金额
+      cg_jbr  varchar2(20),          -- 经办人 
+      cg_czy  varchar2(20),           --操作员
+      cg_bz varchar2(50)         --备注
+      );
+
+ --查看表全部数据        
+select * from tb_cg_main;
+--删除表
+drop table tb_cg_main;     
+-------------------------------------------------------------
+--6)  采购详表 (tb_cg_detail )--------------注册
+-- ( 商品编号,单号, 数量, 总金额 )
+create table tb_cg_detail(
+      cgd_spId varchar2(7)  primary key,
+      cgd_spdh varchar2(14)  REFERENCES tb_cg_main(cg_Id),
+      cgd_num number(5),
+      cgd_spzje number(7,2)
+      );
+
+ 
+    
+ --查看表全部数据        
+select * from tb_cg_detail;
+--删除表
+drop table tb_cg_detail;     
+-------------------------------------------------------------
+--7)  退货单主表 ( tb_th_main)--------------注册
+--    ( 单号, 开单日期, 供货商,出库名称, 应付金额, 实付金额 
+--       经办人 ,  操作员   备注)
+
+create table tb_th_main(
+      th_Id varchar2(14) primary key,-- 单号
+      th_date date,                   ---开单日期
+      th_ghs varchar2(7) REFERENCES tb_ghsinfo(ghs_Id),  -- 供货商
+      th_ckName varchar2(20)  references tb_ckinfo(ck_ID),  --出库名称
+      th_yfje number(7,2),          --应付金额
+      th_sfje number(7,2),         --实付金额 
+      th_jbr  varchar2(20),        --经办人 
+      th_czy  varchar2(20),      --操作员
+      th_cgbz varchar2(50)       --备注
+      );
+
+
+ALTER TABLE tb_th_main
+  ADD CONSTRAINTS th_ck_fk FOREIGN KEY (th_ckName) references tb_ckinfo(ckId);
+
+
+--查看表全部数据        
+select * from tb_th_main;
+--删除表
+drop table tb_th_main;
+-------------------------------------------------------------
+--8)  退货单详表 (tb_th_detail)--------------注册
+--    (  商品编号,单号, 数量, 总金额 )
+create table tb_th_detail(
+      thd_spId varchar2(7)  primary key,
+      thd_spdh varchar2(14) REFERENCES tb_th_main(th_Id),
+      thd_num number(5),
+      thd_spzje number(7,2)
+      );
+
+ --查看表全部数据        
+select * from tb_th_detail;
+--删除表
+drop table tb_th_detail;     
+      
+      
+-------------------------------------------------------------
+--9)  仓库 (tb_ckinfo)     --------------注册     ------有数据       
+--( ID , 仓库名 , 负责人, 电话, 地址, 默认否, POS仓库否,  备注 )
+create table tb_ckinfo(
+      ck_Id varchar2(3) constraint ck_pk primary key,   --ID
+      ck_Name varchar2(20),       --仓库名
+      ck_fzr varchar2(20),         --负责人
+      ck_tell varchar2(11),     --电话
+      ck_address varchar2(20),     --地址
+      ck_mrf varchar2(2),       --默认否          
+      ck_isPos varchar2(2),    --POS仓库否
+      ck_bz varchar2(50)        -- 备注
+      );
+
+ --查看表全部数据        
+select* from tb_ckinfo;
+--删除表
+drop table tb_ckinfo;     
+      
+-------------------------------------------------------------
+--10)  我方付款单表(tb_fkd)--------------注册
+--( ID, 日期, 付款方式, 付款金额 )
+create table tb_fkd(
+      fk_Id varchar2(7) constraint fk_pk primary key,
+      fk_date date,
+      fk_fs varchar2(10),
+      fk_je number(7,2)
+      );
+
+--查看表全部数据        
+select * from tb_fkd;
+--删除表
+drop table tb_fkd;      
+      
+-------------------------------------------------------------      
+--11)  销售总表( tb_sell_main)--------------注册
+--( 单据号, 客户名, 日期, 出货仓,应收金额, 实收金额, 经办人, 操作员,备注 )
+create table tb_sell_main(
+      xs_Id varchar2(14) primary key,     --据号
+      xs_khName varchar2(20),       --客户名
+      xs_xsdate date,         --日期
+      xs_chName varchar2(20),         ----出货仓
+      xs_ysje number(7,2),         --应收金额
+      xs_ssje number(7,2),          --实收金额
+      xs_jbr  varchar2(20),         --经办人
+      xs_czy  varchar2(20),         --操作员
+      xs_bz varchar2(50)         --备注
+      );    
+
+ --查看表全部数据        
+select * from tb_sell_main;
+--删除表
+drop table tb_sell_main;     
+      
+-------------------------------------------------------------
+--12)  销售明细表 ( tb_sell_detail)--------------注册
+--( 商品号, 单号, 数量, 总金额 )
+create table tb_sell_detail(
+      xsd_Id varchar2(7) primary key,
+      xsd_dh varchar2(14) REFERENCES tb_sell_main(xs_Id),
+      xsd_num number(5),
+      xsd_szje number(7,2)
+      );
+
+--查看表全部数据        
+select * from tb_sell_detail;
+--删除表
+drop table tb_sell_detail;      
+      
+-------------------------------------------------------------
+--13)  客户退货单总表( tb_khth_main)--------------注册
+--( 单据号, 客户名, 日期, 入货仓,  应退金额, 实退金额, 经办人, 操作员,备注 )
+ create table tb_khth_main(
+      kh_th_Id varchar2(14)  primary key,     --  单据号
+      kh_th_Name varchar2(20),           --客户名
+      kh_th_date date,           --日期
+      kh_th_chName varchar2(20),       --入货仓
+      kh_th_ytje number(7,2),          --应退金额
+      kh_th_stje number(7,2),          -- 实退金额
+      kh_th_jbr  varchar2(20),        -- 经办人
+      kh_th_czy  varchar2(20),        -- 操作员
+      kh_th_bz varchar2(50)         --备注
+      );
+--查看表全部数据 
+select * from tb_khth_main;
+--删除表
+drop table tb_khth_main;      
+      
+-------------------------------------------------------------
+--14)  客户退货单详表(tb_khth_detail)--------------注册
+--( 商品号, 单号, 数量, 总金额 )
+create table tb_khth_detail(
+      khthd_thxdId varchar2(7)primary key,     --商品号
+      khthd_dh varchar2(14) REFERENCES tb_khth_main(kh_th_Id), --单号
+      khthd_num number(5),     --数量,
+      khthd_zje number(7,2)    --总金额
+      );   
+
+
+--查看表全部数据        
+select * from tb_khth_detail;
+--删除表
+drop table tb_khth_detail;      
+      
+-------------------------------------------------------------
+--15)  客户付款单表 (tb_khfk)--------------注册
+--( 客户号,日期,单号,  收款金额, 经办人,操作员,备注 )
+create table tb_khfk(
+      kh_fk_Id varchar2(7) references tb_khinfo(kh_ID), --客户号
+      kh_fk_fkdate date,               --日期
+      kh_fk_dhId varchar2(14),       --单号
+      kh_fk_skje number(7,2),         --收款金额
+      kh_fk_jbr varchar2(20),         --经办人
+      kh_fk_czy varchar2(20),       --操作员
+      kh_fk_bz varchar(50)     --备注
+                );
+
+
+--查看表全部数据        
+select * from tb_khfk;
+--删除表
+drop table tb_khfk;      
+      
+-------------------------------------------------------------
+--16)  员工表(tb_yginfo)  --------------注册
+--( ID,  姓名, 职务, 电话, 联系地址, 备注 )
+create table tb_yginfo(
+      yg_Id varchar2(5) primary key,    -- ID
+      yg_Name varchar2(20),       --姓名
+      yg_zw varchar2(10),        -- 职务
+      yg_tell varchar2(11),         --电话,
+      yg_address varchar2(20),         --联系地址
+      yg_bz varchar2(50)         --备注
+      );
+      
+      
+
+--查看表全部数据        
+select * from tb_yginfo;
+--删除表
+drop table tb_yginfo;      
+      
+-------------------------------------------------------------
+--17)  员工权限(tb_ygqx)       --------------注册
+--( 员工号, 采购权, 库存管理权,销售权 )
+create table tb_ygqx(
+      yg_Id varchar2(5) REFERENCES tb_yginfo(yg_Id),
+      yg_zgq varchar2(2),
+      yg_kcglq varchar2(2),
+      yg_xsq varchar2(2)
+      );
+
+   
+--查看表全部数据        
+select * from tb_ygqx;
+--删除表
+drop table tb_ygqx;      
+      
+-------------------------------------------------------------
+--18)  库存调拔总表( tb_kctb_main)     --------------注册
+--( ID,  调出库  , 调入库,  日期,  经办人, 操作员 )
+  create table tb_kctb_main(
+      kctb_Id varchar2(14) constraint tb_info_pk primary key,   --ID
+      kctb_ckId varchar2(3) references tb_ckinfo(ck_Id),     --调出库
+      kctb_lkId varchar2(3) references tb_ckinfo(ck_Id),     --调入库
+      kctb_tbdate date,             --日期
+      kctb_jbr  varchar2(20),           --经办人
+      kctb_czy  varchar2(20),           --操作员
+      kctb_bz varchar2(50)          -- 备注
+      );
+
+
+ --查看表全部数据        
+select * from tb_kctb_main;
+--删除表
+drop table tb_kctb_main;     
+      
+-------------------------------------------------------------
+--19)  库存调拔详表(tb_kctb_detail)--------------注册
+--( 商品号,单号(FK), 数量, 总金额 )
+
+create table tb_kctb_detail(
+      kctbd_spId varchar2(7) references tb_spinfo(sp_Id),
+      kctbd_tbdh varchar2(14) references tb_kctb_main(kctb_Id),
+      kctbd_num number(5),
+      kctbd_tbzje number(7,2)
+      );
+
+      
+      
+--查看表全部数据        
+select * from tb_kctb_detail;
+--删除表
+drop table tb_kctb_detail;      
+      
+      
+-------------------------------------------------------------
+--20)  拆分单总表(tb_cf_main)  ------------------------注册
+--( 拆分单号 , 拆分库, 日期, 被拆商品编号, 拆分数量, 经办人, 操作员,备注 )
+
+
+create table tb_cf_main(
+      cf_Id varchar2(14) primary key,       --拆分单号
+      cf_lk varchar2(3) references tb_ckinfo(ck_Id),   --拆分库
+      cf_date date,           --日期,
+      cf_bcfspId varchar2(7) references tb_spinfo(sp_Id),   --被拆商品编号
+      cf_cfNum number(5),    -- 拆分数量
+      cf_jbr  varchar2(20),     --经办人
+      cf_czy  varchar2(20),     --操作员
+      cf_bz varchar2(50)     --备注
+      );
+--查看表全部数据 
+select * from tb_cf_main;
+--删除表
+drop table tb_cf_main; 
+      
+      
+-------------------------------------------------------------
+--21)  拆分单详表(tb_cf_detail)  ----------------------注册
+-- ( 商品号, 单号(FK), 数量, 总金额 )
+create table tb_cf_detail(
+      cfd_spId varchar2(7) references tb_spinfo(sp_Id),
+      cfd_xbId varchar2(14) references tb_cf_main(cf_Id),
+      cfd_num number(5),
+      cfd_zje number(7,2)
+      );
+
+
+
+ --查看表全部数据        
+select * from tb_cf_detail;
+--删除表
+drop table tb_cf_detail;     
+      
+      
+-------------------------------------------------------------
+--22)  捆绑单总表(tb_kb_main)  -------------------------注册
+--( 拆分单号 , 捆绑库, 日期,捆绑成商品, 绑成数量, 经办人, 操作员, 备注 )
+create table tb_kb_main(
+      kb_Id varchar2(14) primary key,      -- 拆分单号
+      kb_ck varchar(3) references tb_ckinfo(ck_Id),     --捆绑库
+      kb_date date,           --日期
+      kb_cspId varchar2(7) references tb_spinfo(sp_Id), --捆绑成商品
+      kb_Num number(5),           --绑成数量
+      kb_jbr  varchar2(20),        -- 经办人
+      kb_czy  varchar2(20),         --操作员
+      kb_bz varchar2(50)         --备注
+      );
+      
+      
+
+
+
+--查看表全部数据        
+select * from tb_kb_main;
+--删除表
+drop table tb_kb_main;      
+      
+      
+-------------------------------------------------------------
+--23)  捆绑单详表(tb_kb_detail)   -----------------------注册
+--( 商品号, 单号(FK), 数量, 总金额 )
+create table tb_kb_detail(
+      kbd_spId varchar2(7) references tb_spinfo(sp_Id),
+      kbd_cdId varchar2(14) references tb_kb_main(kb_Id),
+      kbd_num number(5),
+      kbd_zje number(7,2)
+      );
+      
+      
+      
+--查看表全部数据        
+select * from tb_kb_detail;
+--删除表
+drop table tb_kb_detail;      
+      
+      
+-------------------------------------------------------------
+--24)  报损总表 (tb_bs_main) -------------------------注册
+--(单号 , 仓库名, 日期,经办人, 操作员,备注 )
+create table tb_bs_main(
+      bs_Id varchar2(14) primary key,       --单号
+      bs_ck varchar(3) references tb_ckinfo(ck_Id),   --仓库名
+      bs_date date,           --日期
+      bs_jbr  varchar2(20),         --经办人
+      bs_czy  varchar2(20),         --操作员
+      bs_bz varchar2(50)         --备注
+      );
+
+ --查看表全部数据        
+select * from tb_bs_main;
+--删除表
+drop table tb_bs_main;     
+      
+      
+-------------------------------------------------------------
+--25)  报损详表(tb_bs_detail) ------------------------注册
+--( 商品号, 单号(FK), 数量, 总金额 )
+create table tb_bs_detail(
+      bsd_xspId varchar2(7) references tb_spinfo(sp_Id),
+      bsd_xbId varchar2(14) references tb_bs_main(bs_Id),
+      bsd_num number(5),
+      bsd_zje number(7,2)
+      );
+      
+
+      
+--查看表全部数据        
+select * from tb_bs_detail;
+--删除表
+drop table tb_bs_detail;      
+      
+      
+-------------------------------------------------------------
+--26)  报溢总表(tb_by_main) -----------------------注册
+--( 单号 , 仓库名, 日期,经办人, 操作员,备注 )
+create table tb_by_main(
+      by_Id varchar2(14) primary key,       --单号
+      by_ck varchar(3) references tb_ckinfo(ck_Id),  -- 仓库名
+      by_date date,           --日期
+      by_jbr  varchar2(20),         --经办人
+      by_czy  varchar2(20),        --操作员
+      by_bz varchar2(50)         --备注
+      );
+      
+
+      
+--查看表全部数据        
+select * from tb_by_main;
+--删除表
+drop table tb_by_main;      
+      
+      
+-------------------------------------------------------------
+--27)  报溢详表(tb_by_detail) ------------------------注册
+--( 商品号,  单号(FK), 数量, 总金额 )
+create table tb_by_detail(
+      byd_spId varchar2(7) references tb_spinfo(sp_Id),
+      byd_cdId varchar2(14) references tb_by_main(by_Id),
+      byd_num number(5),
+      byd_zje number(7,2)
+      );
+
+
+
+--查看表全部数据        
+select * from tb_by_detail;
+--删除表
+drop table tb_by_detail;      
+      
+      
+-------------------------------------------------------------
+--28)  盘点总表(tb_pd_main) ----------------------------注册
+--( 单号(PK) , 盘点仓库, 日期 , 经办人,操作员, 商品条数, 高品总数, 备注 )
+ create table tb_pd_main(
+      pd_Id varchar2(7) primary key,       --单号(PK)
+      pd_ck varchar(3) references tb_ckinfo(ck_Id),   --盘点仓库
+      pd_date date,       --日期
+      pd_jbr  varchar2(20),     --经办人
+      pd_czy  varchar2(20),     --操作员
+      pd_ypts number(5),       --商品条数
+      pd_ypzs number(5),      -- 商品总数
+      pd_bz varchar2(50)    -- 备注
+      );
+
+   
+   
+--查看表全部数据        
+select * from tb_pd_main;
+--删除表
+drop table tb_pd_main;      
+      
+      
+-------------------------------------------------------------
+--29)  盘点详表(tb_pd_detail) ---------------------注册
+--( 商品号(FK),  单号(FK), 数量, 总金额 )
+create table tb_pd_detail(
+      pdd_spId varchar2(7) references tb_spinfo(sp_Id),
+      pdd_sbId varchar2(14) references tb_pd_main(pd_Id),
+      pdd_num number(5),
+      pdd_zje number(7,2)
+      );
+
+      
+      
+                  
+ --查看表全部数据        
+select * from tb_pd_detail;
+--删除表
+drop table tb_pd_detail;     
+      
+-------------------------------------------------------------
+--30)  操作员表  ( tb_userinfo)--------------注册
+--( 编号(PK),用户名, 密码, 所任职务, 是否POS操作员 )
+create table tb_usernofo(
+      user_Id varchar2(4) primary key,     --编号(PK),
+      user_Name varchar2(20),      --用户名,
+      user_PSW varchar2(20),       --密码,
+      user_srzw varchar2(20),       --所任职务
+      user_isPos varchar2(1)       --是否POS操作员
+      );
+
+
+--查看表全部数据        
+select * from tb_usernofo for update;
+--删除表
+drop table tb_usernofo;      
+      
+      
+-------------------------------------------------------------
+--31)  会员表  (tb_hyinfo)    --------------注册
+--( 编号(PK),性名,级别,会员积分, 会员状态, 会员级别(FK), 使用期限,会员生日,
+--   联系电话, 加入日期,截止日期,是否积分升级,备注)
+create table tb_hyinfo(
+      hy_Id varchar2(4) primary key,      --编号(PK
+      hy_Name varchar2(20),        --姓名
+      hy_Level varchar2(10) references tb_hyjb(hyjb_Id),     --级别
+      hy_jf varchar2(2)  ,   --会员积分
+      hy_zt varchar2(4),         --会员状态
+      hy_syqx varchar2(4),         --使用期限
+      hy_sr date,           --会员生日
+      hy_tell varchar2(11),         --联系电话
+      hy_jldate date,          --加入日期
+      hy_jzdate date,           --截止日期
+      hy_isjfsj varchar2(2),        --是否积分升级
+      hy_bz varchar2(50)         --备注 
+);
+
+ --查看表全部数据        
+select * from tb_hyinfo;
+--删除表
+drop table tb_hyinfo;     
+      
+      
+-------------------------------------------------------------
+--32)  会员销费表 (tb_hyxf)      --------------注册
+--(会员编号(PK), 账户金额, 总消费额, 消费次数, )
+create table tb_hyxf(
+      hyxf_Id  varchar2(4) references tb_hyinfo(hy_Id), --会员编号(PK)
+      hyxf_xhye number(7,2),         --账户金额
+      hyxf_zxf number(7,2),        -- 总消费额
+      hyxf_xfcs number(4)         --消费次数
+      );
+
+
+      
+--查看表全部数据        
+select * from tb_hyxf;
+--删除表
+drop table tb_hyxf;      
+      
+      
+-------------------------------------------------------------
+--33)  会员级别表  ( tb_hyjb)    --------------注册
+--( 级别编号(PK), 级别名称, 级别折扣,积分下限,积分上限)
+create table tb_hyjb(
+     hyjb_Id varchar2(2) primary key,  --级别编号(PK)
+     hyjb_Name varchar(10),     --级别名称,
+     hyjb_jbzk number(3,1),     --级别折扣
+     hyjb_jfxx number(4),     --积分下限
+     hyjb_jfsx number(4)     --积分上限
+);
+
+ALTER TABLE tb_hyjb          
+  ADD CONSTRAINTS tb_hyjb CHECK (hyjb_jbzk >0 and hyjb_jbzk <=1);
+  
+
+
+ --查看表全部数据 
+select * from tb_hyjb;
+--删除表
+drop table tb_hyjb;    
+     
+     
+-------------------------------------------------------------
+--34)  会员续费表  ( tb_hyxf)   --------------注册
+--( 交费日期, 会员卡号, 续费金额, 实际支付,操作员,备注)
+create table tb_hyxf(
+     hyxf_jfdate date,    -- 交费日期
+     hyxf_Id varchar2(4) references tb_hyinfo(hy_Id), --会员卡号
+     hyxf_sfje number(7,2),   --续费金额
+     hyxf_sjzf number(7,2),    -- 实际支付
+     hyxf_czy  varchar2(20),   --  操作员
+     hyxf_bz varchar2(50)     --备注
+     );
+     
+
+     
+--查看表全部数据        
+select * from tb_hyxf;
+--删除表
+drop table tb_hyxf;     
+     
+-------------------------------------------------------------
+--35)  POS端消费表( tb_posxfb_main)  -------------------------注册
+--( 单号,日期, 导购员, 仓库, 顾客,应付金额,实付金额,付款方式, 备注)
+create table tb_posxfb_main(
+     posxfb_Id varchar2(14) primary key,    -- 单号
+     posxfb_date date,           --日期
+     posxfb_dgyId varchar2(5)  references tb_yginfo(yg_Id),-- 导购员
+     posxfb_ckId varchar2(3) references tb_ckinfo(ck_Id),   --仓库
+     posxfb_gkjb varchar2(2),           --顾客(会员非会员)
+     posxfb_yfje number(7,2),            -- 应付金额
+     posxfb_sfje number(7,2),             --实付金额
+     posxfb_fkfs varchar2(1) references tb_kh_xffs(kh_xffs_Id),     --付款方式
+     posxfb_bz varchar2(50)             --备注
+     );
+
+     
+ --查看表全部数据        
+select * from tb_posxfb_main;
+--删除表
+drop table tb_posxfb_main;    
+     
+     
+ -------------------------------------------------------------
+--36)  POS端消费明表( tb_posxfb_detail) -----------------注册
+--( 商品号,单号(FK) ,数量, 总金额)
+
+create table tb_posxfb_detail(   
+      posxfbd_spId varchar2(7) references tb_spinfo(sp_Id),     --商品号
+      posxfbd_Id varchar2(14) references tb_posxfb_main(posxfb_Id),  -- 单号(FK)
+      posxfbd_num number(5),             --数量
+      posxfbd_zje number(7,2)           --总金额
+      );
+
+ --查看表全部数据        
+select * from tb_posxfb_detail;
+--删除表
+drop table tb_posxfb_detail;     
+      
+      
+----------------------------------------------------------
+--37)  客户消费方式表(tb_kh_xffs)      --------------注册
+--( 编号, 名称)    (名称有: 现金,储值卡,信用卡, 代金券)
+create table tb_kh_xffs(
+     kh_xffs_Id varchar2(1) primary key,
+     kh_xffs_Name varchar(20)
+     
+     );
+
+
+
+--查看表全部数据        
+select * from tb_kh_xffs;
+--删除表
+drop table tb_kh_xffs;     
+     
+     
+-------------------------------------------------------------
+--38) 商品类别表  (类别ID, 类别名)    --------------注册
+    create table tb_sblb(
+        sblb_Id varchar2(2) primary key,
+        sblb_Name varchar2(10)
+       
+        );
+
+           
+--查看表全部数据        
+select * from tb_sblb;
+--删除表
+drop table tb_sblb;
+
+------------------------------------------------------------
+--39)  POS端退货表( tb_posth_main) 
+--(退货单号,销售单号 , 退到仓库,应退金额,实退金额,操作员, 备注)
+create table tb_posth_main(
+     posth_Id varchar2(14) primary key,    -- 单号
+     posxfd_Id varchar2(14) references tb_posxfb_main(posxfb_Id),
+     posth_dgyId varchar2(5)  references tb_yginfo(yg_Id),-- 导购员
+     posth_ckId varchar2(3) references tb_ckinfo(ck_Id),   --仓库
+     posth_gkjb varchar2(2),           --顾客(会员非会员)
+     posth_yfje number(7,2),            -- 应退金额
+     posth_sfje number(7,2),             --实退金额
+     posth_czy varchar2(20),   
+     posth_bz  varchar2(50)             --备注
+     );
+-------------------------------------------------------------
+--40)  POS端退货明表( tb_posxth_detail)
+--( 商品号,单号(FK) ,数量, 总金额)
+
+create table tb_posxth_detail(   
+      posxth_spId varchar2(7) references tb_spinfo(sp_Id),     --商品号
+      posxth_Id varchar2(14) references tb_posth_main(posth_Id),  -- 单号(FK)
+      posxth_num number(5),             --数量
+      posxth_zje number(7,2)           --总金额
+      );
+      
+
+
+
+
+
+
+
+

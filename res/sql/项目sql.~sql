@@ -1,0 +1,1331 @@
+--超市管理系统表的初使化
+
+--注意不可随便改表结构,有自已的想法说一下,再来统一更改
+-------------------------------------------------------------
+--1)  商品属性表 (tb_spinfo)--------------------------注册------------------数据OK
+--(    商品号 , 商品名, 类别, 条码, 单位, 单位关系, 规格型号, 颜色,状态, 
+--     保质期(天), 特价否, 最低库存,  生产厂商, 备注   )  
+
+  (  商品编号 ,商品名称,单价,类别,所属仓库,条码,单位,单位关系,预设进价,预设售价,规格型号,颜色,   
+     最低库存, 是否特价商品,  商品折扣, 会员价, 特价, 特价期限,开始日期,结束日期, 
+     状态,打折率,生产厂商,备注)
+            
+create table tb_spinfo(
+      sp_Id varchar2(7) constraint sp_info_pk primary key,   --商品编号
+      sp_Name varchar2(50) constraint sp_name_nn not null,  --商品名称
+      sp_dj number(7,2),               --单价
+      sp_lb varchar2(20) references tb_sblb(sblb_Id),      --类别
+      
+      sp_tm varchar2(7),               --条码
+      sp_dw varchar2(2),           --单位
+      sp_dwgx varchar2(20),            --单位关系
+      sp_jj number(7,2),             --预设进价
+      sp_sj number(7,2),          -- 预设售价
+      
+      sp_ggxh varchar2(20),           --规格型号
+      sp_color varchar2(10),         -- 颜色
+      sp_zdkc number(4),           --最低库存
+      sp_sftj number(1),           --是否特价商品
+      sp_zk number(2,1),         --商品折扣
+      
+      sp_hyj number(7,2),         --会员价
+      sp_tj number(7,2),           --特价
+      sp_tjdateFrom date,           --开始日期
+      sp_tjdateTo date,         --结束日期
+      sp_isuse varchar2(1),       --状态
+      sp_dzl number(2,1),         --打折率
+      sp_sccs varchar2(50),        --生产厂商
+      sp_bz varchar2(50),
+      sp_syck varchar2(3) references tb_ckinfo(ck_Id)
+      );
+   --商品拆扣的限制
+ALTER TABLE tb_spinfo         
+  ADD CONSTRAINTS SPJW_SC_C CHECK (sp_zk >0 and sp_zk <=1.0);   
+           
+      insert into tb_spinfo values('5100001','统一冰红茶','3.5','02','950001','瓶','12瓶=一箱','0.8','1.0','500ml','无色','10','1','1','0.9'
+      ,'0.9',to_date('2010-10-01','YYYY-MM-DD'),TO_DATE('2010-12-01','YYYY-MM-DD'),
+      '1','1.0','康师傅集团有限公司',null,'001');
+      
+            insert into tb_spinfo values('5100002','森活水','1.0','02','950002','瓶','12瓶=一箱','0.8','1.0','500ml','无色','10','1','1','0.9'
+      ,'0.9',to_date('2010-10-01','YYYY-MM-DD'),TO_DATE('2010-12-01','YYYY-MM-DD'),
+      '1','1.0','森活水有限公司',null,'001');
+      
+            insert into tb_spinfo values('5100003','康师傅绿茶','3.5','02','950003','瓶','12瓶=一箱','3.0','3.5','500ml','无色','10','1','1','0.9'
+      ,'0.9',to_date('2010-10-01','YYYY-MM-DD'),TO_DATE('2010-12-01','YYYY-MM-DD'),
+      '1','1.0','康师傅集团有限公司',null,'001');
+      
+            insert into tb_spinfo values('5100004','娃哈哈矿泉水','1.5','02','950004','瓶','12瓶=一箱','0.8','1.5','500ml','无色','10','1','1','1.4'
+      ,'1.4',to_date('2010-10-01','YYYY-MM-DD'),TO_DATE('2010-12-01','YYYY-MM-DD'),
+      '1','1.0','娃哈哈集团有限公司',null,'001');
+      
+            insert into tb_spinfo values('5100005','夏进酸奶','2.5','02','950005','瓶','12瓶=一箱','2.0','2.5','500ml','白色','10','1','1','2.4'
+      ,'2.4',to_date('2010-10-01','YYYY-MM-DD'),TO_DATE('2010-12-01','YYYY-MM-DD'),
+      '1','1.0','康师傅集团有限公司',null,'001');
+      
+            insert into tb_spinfo values('5100006','蒙牛酸酸乳','3.5','02','950006','瓶','12瓶=一箱','3.0','3.5','500ml','无色','10','1','1','3.2'
+      ,'3.4',to_date('2010-10-01','YYYY-MM-DD'),TO_DATE('2010-12-01','YYYY-MM-DD'),
+      '1','1.0','蒙牛集团有限公司',null,'001');
+      
+            insert into tb_spinfo values('5100007','伊利优酸乳','3.5','02','950007','瓶','12瓶=一箱','2.5','3.5','500ml','无色','10','1','1','3.4'
+      ,'3.4',to_date('2010-10-01','YYYY-MM-DD'),TO_DATE('2010-12-01','YYYY-MM-DD'),
+      '1','1.0','伊利集团有限公司',null,'001');
+      
+            insert into tb_spinfo values('5200001','熊仔饼干','3.0','03','960001','袋','20袋=一箱','2.3','3.0','200g','黄色','10','1','1','3.0'
+      ,'3.0',to_date('2010-10-01','YYYY-MM-DD'),TO_DATE('2010-10-01','YYYY-MM-DD'),
+      '1','1.0','徐福记集团有限公司',null,'001');
+      
+             insert into tb_spinfo values('5200002','太谷饼','1.0','03','960002','个','20个=一箱','0.8','1.0','50g','黄色','10','1','1','0.9'
+      ,'1.0',to_date('2010-10-01','YYYY-MM-DD'),TO_DATE('2010-10-01','YYYY-MM-DD'),
+      '1','1.0','徐福记集团有限公司',null,'003');
+            
+             insert into tb_spinfo values('5200003','忧忧馍干','1.0','03','960003','个','20个=一箱','0.8','1.0','500kg','黄色','10','1','1','0.9'
+      ,'1.0',to_date('2010-10-01','YYYY-MM-DD'),TO_DATE('2010-10-01','YYYY-MM-DD'),
+      '1','1.0','忧忧集团有限公司',null,'003');
+      
+            
+             insert into tb_spinfo values('5200004','大骨面','1.0','03','960004','袋','24袋=一箱','0.8','1.0','500g','金黄色','10','1','1','0.9'
+      ,'1.0',to_date('2010-10-01','YYYY-MM-DD'),TO_DATE('2010-10-01','YYYY-MM-DD'),
+      '1','1.0','康氏集团有限公司',null,'003');
+      
+            
+             insert into tb_spinfo values('5200005','大碗香120','1.0','03','960005','袋','20袋=一箱','0.8','1.0','500g','红色','10','1','1','0.9'
+      ,'1.0',to_date('2010-10-01','YYYY-MM-DD'),TO_DATE('2010-10-01','YYYY-MM-DD'),
+      '1','1.0','徐福记集团有限公司',null,'002');
+      
+            
+             insert into tb_spinfo values('5300001','天冠纯净酒','100','01','970001','瓶','5瓶=一箱','80','100','500ml','无色','10','1','1','98'
+      ,'98',to_date('2010-10-01','YYYY-MM-DD'),TO_DATE('2010-10-01','YYYY-MM-DD'),
+      '1','1.0','宋河有限公司',null,'002');
+      
+           insert into tb_spinfo values('5300002','卧龙玉酒','1200','01','970002','瓶','5瓶=一箱','1000','1200','1500ml','无色','10','1','1','1180'
+      ,'1180',to_date('2010-10-01','YYYY-MM-DD'),TO_DATE('2010-10-01','YYYY-MM-DD'),
+      '1','1.0','宋河有限公司',null,'002');
+      
+           insert into tb_spinfo values('5300003','青岛啤酒','4.0','01','960003','瓶','12瓶=一箱','3.0','4.0','500ml','黄色','10','1','1','3.8'
+      ,'3.8',to_date('2010-10-01','YYYY-MM-DD'),TO_DATE('2010-10-01','YYYY-MM-DD'),
+      '1','1.0','青岛啤酒有限公司',null,'002');
+      
+      insert into tb_spinfo values('5300004','燕京啤酒','3.0','01','960004','瓶','12瓶=一箱','2.5','3.0','500ml','黄色','10','1','1','2.9'
+      ,'2.9',to_date('2010-10-01','YYYY-MM-DD'),TO_DATE('2010-10-01','YYYY-MM-DD'),
+      '1','1.0','燕京啤酒有限公司',null,'002');
+      
+            insert into tb_spinfo values('5300005','牛奶','4.0','01','960005','瓶','12瓶=一箱','3.0','4.0','500ml','黄色',-10,'1','1','3.8'
+      ,'3.8',to_date('2010-10-01','YYYY-MM-DD'),TO_DATE('2010-10-01','YYYY-MM-DD'),
+      '1','1.0','青岛啤酒有限公司',null,'002');
+      
+      insert into tb_spinfo values('5300006','花生','3.0','01','960006','包','一包=三斤','2.5','3.0','500ml','黄色',-20,'1','1','2.9'
+      ,'2.9',to_date('2010-10-01','YYYY-MM-DD'),TO_DATE('2010-10-01','YYYY-MM-DD'),
+      '1','1.0','燕京啤酒有限公司',null,'002');
+      
+       insert into tb_spinfo values('5300007','白菜',3.0,'01','960006','棵','',2.5,3.0,'500ml','表色',0,'1','1',2.9
+      ,2.9,to_date('2010-10-01','YYYY-MM-DD'),TO_DATE('2010-10-01','YYYY-MM-DD'),
+      '1',1.0,'QQ农场',null,'002');
+      
+      
+ --查看表全部数据        
+select * from tb_spinfo;
+delete from tb_spinfo
+--删除表
+drop table tb_spinfo;     
+-------------------------------------------------------------
+
+  
+--2)  客户 ( tb_khinfo)--------------------------注册-------------数据OK
+-- ( 客户号, 客户名, 联系人, 电话, 我方应收金额, 联系地址,默认客户,禁用,备注 ) 
+create table tb_khinfo(
+      kh_Id varchar2(4) constraint kh_info_pk primary key, --客户号
+      kh_Name varchar2(20),       --客户名
+      kh_lxr varchar2(20),         --联系人
+      kh_tell varchar2(11),         --电话
+      kh_ysjy number(7,2),         --我方应收金额
+      kh_address varchar2(50),         --联系地址
+      kh_mrkh varchar2(2),         --默认客户
+      kh_jyf varchar2(2),          --禁用否
+      kh_bz varchar2(50)        --备注
+      );
+      
+      select kh.kh_name,kh.kh_lxr,
+         kh.kh_tell,kh.kh_ysjy,kh.kh_address,
+         kh.kh_mrkh,kh.kh_jyf,kh.kh_bz
+         from tb_khinfo kh 
+         where kh.kh_name like '%普通%' 
+      update tb_khinfo kh  set kh.kh_lxr = '',
+       kh.kh_tell = '',kh.kh_mrkh = '' ,kh.kh_bz = '' where kh.kh_name = ''; 
+      
+      
+insert into tb_khinfo values('0001','广州大酒店','广经理','111110',0.0,'广州市海珠区120号',null,'否',null);
+
+insert into tb_khinfo values('0002','郑大校园超市','郑经理','111210',0.0,'湖南商学院110号',null,'否',null);
+
+insert into tb_khinfo values('0003','高新网络公司','高经理','161110',0.0,'湖南师范大学33号',null,'否',null);
+
+insert into tb_khinfo values('0004','商都信息网络资讯公司','商经理','111110',0.0,'宁乡县玉潭镇122号',null,'否',null);
+
+insert into tb_khinfo values('0005','普通用户',null,null,0.0,null,null,'否',null);
+
+insert into tb_khinfo values('0006','步步高超市','步经理','112110',0.0,'上海市',null,'否',null);
+
+
+--查看表全部数据        
+select * from tb_khinfo;
+--删除表
+drop table tb_khinfo;   
+-------------------------------------------------------------     
+--3)  供货商  ( tb_ghsinfo)    --------------------------注册-------------数据OK
+--    (ID, 供货商名,联系人, 联系电话, 
+--   联系地址, 我方应付金额, 默认供货商,禁用否,备注)
+
+create table tb_ghsinfo(
+      ghs_Id varchar2(7)  primary key,    --ID
+      ghs_Name varchar2(50) not null,     --供货商名
+      ghs_lxr varchar2(20),         --联系人
+      ghs_tell varchar2(11),         --联系电话
+      ghs_address varchar2(50),       --联系地址
+      ghs_yfjy number(7,2),         --我方应付金额
+      ghs_ismr varchar2(2),         --默认供货商
+      ghs_jyf varchar2(2),           --禁用否
+      ghs_bz varchar2(50)         --备注
+      );
+insert into tb_ghsinfo values('0001','康师傅集团有限公司','康经理','7940555','康乐村192号',0.0,null,'否',null);
+
+insert into tb_ghsinfo values('0002','森活水有限公司','森经理','7940555','康乐村122号',0.0,null,'否',null);
+
+insert into tb_ghsinfo values('0003','徐福记集团有限公司','徐经理','7940555','康乐村192号',0.0,null,'否',null);
+
+insert into tb_ghsinfo values('0004','燕京啤酒有限公司','燕经理','7940555','康乐村15号',0.0,null,'否',null);
+
+insert into tb_ghsinfo values('0005','青岛啤酒有限公司','青经理','7940555','康乐村12号',0.0,null,'否',null);
+
+insert into tb_ghsinfo values('0006','康氏集团有限公司','康经理','7940555','康乐村92号',0.0,null,'否',null);
+  
+insert into tb_ghsinfo values('0007','宋河有限公司','宋经理','7940555','康乐村182号',0.00,null,'否',null);
+
+insert into tb_ghsinfo values('0008','忧忧集团有限公司','忧经理','7940555','康乐村152号',0.00,null,'否',null);
+
+insert into tb_ghsinfo values('0009','娃哈哈集团有限公司','娃经理','7940555','康乐村492号',0.00,null,'否',null); 
+
+insert into tb_ghsinfo values('0010','伊利集团有限公司','伊经理','7940555','康乐村552号',0.00,null,'否',null);       
+
+insert into tb_ghsinfo values('0011','蒙牛集团有限公司','蒙经理','7940555','康乐村72号',0.00,null,'否',null); 
+ 
+ --查看表全部数据        
+select * from tb_ghsinfo;
+--删除表
+drop table tb_ghsinfo;     
+-------------------------------------------------------------
+--4)  采购主表 ( tb_cg_main)--------------------------注册
+--  (  单号, 开单日期, 供货商,入库名称, 应付金额, 实付金额,优惠金额
+--     经办人 ,  操作员   备注 )
+
+create table tb_cg_main(
+      cg_Id varchar2(14)  primary key, --单号
+      cg_date date,       --开单日期
+      cg_ghs varchar2(7)  REFERENCES tb_ghsinfo(ghs_Id),  -- 供货商
+      cg_lkId varchar2(3) references tb_ckinfo(ck_ID),   --入库名ID
+      cg_yfje number(7,2),           --应付金额
+      cg_sfje number(7,2),           --实付金额
+      cg_yhje number(7,2),               --优惠金额
+      cg_jbr  varchar2(20),          -- 经办人 
+      cg_czy  varchar2(20),           --操作员
+      cg_bz varchar2(50)         --备注
+      );
+ 
+insert into tb_cg_main values('CJ0802050001',to_date('2010-10-01','YYYY-MM-DD'),'0001','001',58.00,58.00,0.00,'小周','小朱',null);   
+
+
+insert into tb_cg_main values('CJ0802050002',to_date('2010-10-01','YYYY-MM-DD'),'0002','001',80.00,80.00,0.00,'小周','小朱',null);
+
+
+insert into tb_cg_main values('CJ0802050003',to_date('2010-6-01','YYYY-MM-DD'),'0001','001',345.00,345.00,0.00,'小周','小朱','finey');   
+
+ --查看表全部数据        
+select * from tb_cg_main;
+--删除表
+drop table tb_cg_main;     
+-------------------------------------------------------------
+--5)  采购详表 (tb_cg_detail )--------------------------注册
+-- ( 商品编号,单号, 数量, 总金额 )
+create table tb_cg_detail(
+      cgd_spId varchar2(7) references tb_spinfo(sp_id),
+      cgd_spdh varchar2(14)  REFERENCES tb_cg_main(cg_Id),
+      cgd_num number(5),
+      cgd_spzje number(7,2)
+      );
+ insert into tb_cg_detail values('5100001','CJ0802050001',10,8.00);  
+ insert into tb_cg_detail values('5100003','CJ0802050001',10,20.00);
+ insert into tb_cg_detail values('5100005','CJ0802050002',10,30.00);
+ insert into tb_cg_detail values('5100002','CJ0802050003',100,80.00);
+ 
+    
+ --查看表全部数据        
+select * from tb_cg_detail;
+--删除表
+drop table tb_cg_detail;     
+-------------------------------------------------------------
+--6)  退货单主表 ( tb_th_main)--------------------------注册
+--    ( 单号, 开单日期, 供货商,出库名称, 应付金额, 实付金额 
+--       经办人 ,  操作员   备注)
+
+create table tb_th_main(
+      th_Id varchar2(14) primary key,-- 单号
+      th_date date,                   ---开单日期
+      th_ghs varchar2(7) REFERENCES tb_ghsinfo(ghs_Id),  -- 供货商
+      th_ckID varchar2(3)  references tb_ckinfo(ck_ID),  --出库名称
+      th_yfje number(7,2),          --应付金额
+      th_sfje number(7,2),         --实付金额 
+      th_jbr  varchar2(20),        --经办人 
+      th_czy  varchar2(20),      --操作员
+      th_cgbz varchar2(50)       --备注
+      );
+      
+ 
+insert into tb_th_main values('CT100506020001',to_date('2010-11-10','YYYY-MM-DD'),'0001','001',30,30,'小周','小熊',null);
+insert into tb_th_main values('CT100506030001',to_date('2010-11-10','YYYY-MM-DD'),'0001','001',10,10,'小周','小熊',null);
+
+
+
+--查看表全部数据        
+select * from tb_th_main;
+--删除表
+drop table tb_th_main;
+-------------------------------------------------------------
+--7)  退货单详表 (tb_th_detail)--------------------------注册
+--    (  商品编号,单号, 数量, 总金额 )
+create table tb_th_detail(
+      thd_spId varchar2(7)  references tb_spinfo(sp_id),
+      thd_spdh varchar2(14) REFERENCES tb_th_main(th_Id),
+      thd_num number(5),
+      thd_spzje number(7,2)
+      );
+      insert into tb_th_detail values('5100001','CT100506020001',10,30);
+      insert into tb_th_detail values('5100003','CT100506020001',5,10);
+      
+ --查看表全部数据        
+select * from tb_th_detail;
+--删除表
+drop table tb_th_detail;     
+      
+      
+-------------------------------------------------------------
+--8)  仓库 (tb_ckinfo)       --------------------------注册-------------数据OK
+--( ID , 仓库名 , 负责人, 电话, 地址, 默认否, POS仓库否,  备注 )
+create table tb_ckinfo(
+      ck_Id varchar2(3)  primary key,   --ID
+      ck_Name varchar2(20),       --仓库名
+      ck_fzr varchar2(20),         --负责人
+      ck_tell varchar2(11),     --电话
+      ck_address varchar2(20),     --地址
+      ck_mrf varchar2(2),       --默认否          
+      ck_isPos varchar2(2),    --POS仓库否
+      ck_bz varchar2(50)  
+      );
+      insert into tb_ckinfo values('001','主仓库','小王','555455','王家村221号',null,'否',null);
+
+      insert into tb_ckinfo values('002','酒库','小周','555455','周家村221号',null,'否',null);
+      
+      insert into tb_ckinfo values('003','饮料仓库','小熊','555455','熊家村221号',null,'否',null);
+            
+      insert into tb_ckinfo values('004','食品仓库','小朱','555455','朱家村221号',null,'否',null);
+      
+ --查看表全部数据        
+select* from tb_ckinfo;
+--删除表
+drop table tb_ckinfo;     
+      
+-------------------------------------------------------------
+--9)  我方付款单表(tb_fkd)--------------------------注册
+--( ID, 日期, 付款方式, 付款金额 )
+create table tb_fkd(
+      fk_Id varchar2(15) primary key,
+      fk_date date,
+      fk_fs varchar2(10),
+      fk_je number(7,2)
+      );
+      insert into tb_fkd values('fk0001',to_date('2010-10-01','YYYY-MM-DD'),'现金',138.00);
+      
+      
+--查看表全部数据        
+select * from tb_fkd;
+--删除表
+drop table tb_fkd;      
+      
+-------------------------------------------------------------      
+--10)  销售总表( tb_sell_main)   --------------------------注册
+--( 单据号, 客户名, 日期, 出货仓,应收金额, 实收金额, 经办人, 操作员,备注 )
+create table tb_sell_main(
+      xs_Id varchar2(14) primary key,     --据号
+      xs_khID varchar2(4) references tb_khinfo(kh_id),       --客户名
+      xs_xsdate date,         --日期
+      xs_chName varchar2(3) references tb_ckinfo(ck_ID),         ----出货仓
+      xs_ysje number(7,2),         --应收金额
+      xs_ssje number(7,2),          --实收金额
+      xs_jbr  varchar2(20),         --经办人
+      xs_czy  varchar2(20),         --操作员
+      xs_bz varchar2(50)         --备注
+      );    
+      
+insert into tb_sell_main values('XS100205020002','0001',to_date('2010-10-01','YYYY-MM-DD'),'001',3.5,3.5,'小王','小卡',null);
+insert into tb_sell_main values('XS100205020001','0005',to_date('2010-6-01','YYYY-MM-DD'),'001',10.00,10.00,'小王','小卡',null);
+insert into tb_sell_main values('XS100205020003','0005',to_date('2010-9-01','YYYY-MM-DD'),'001',3.5,2.5,'小王','小卡',null);
+insert into tb_sell_main values('XS100205020004','0005',to_date('2010-7-01','YYYY-MM-DD'),'001',10.00,8.00,'小王','小卡',null);
+
+--查看表全部数据        
+select * from tb_sell_main;
+--删除表
+drop table tb_sell_main;     
+      
+delete tb_sell_main;
+-------------------------------------------------------------
+--11)  销售明细表 ( tb_sell_detail)   --------------------------注册
+--( 商品号, 单号, 数量, 总金额 )
+create table tb_sell_detail(
+      xsd_Id varchar2(7) references tb_spinfo(sp_id),
+      xsd_dh varchar2(14) REFERENCES tb_sell_main(xs_Id),
+      xsd_num number(5),
+      xsd_szje number(7,2)
+      );
+      insert into tb_sell_detail values('5100001','XS100205020002',1,3.5);
+      insert into tb_sell_detail values('5100002','XS100205020002',10,10.00);
+      insert into tb_sell_detail values('5100001','XS100205020003',1,3.5);
+      insert into tb_sell_detail values('5100002','XS100205020004',10,10.00);
+
+
+
+--查看表全部数据        
+select * from tb_sell_detail;
+--删除表
+drop table tb_sell_detail;      
+delete tb_sell_detail
+-------------------------------------------------------------
+--12)  客户退货单总表( tb_khth_main)--------------------------注册
+--( 单据号, 客户名, 日期, 入货仓,  应退金额, 实退金额, 经办人, 操作员,备注 )
+ create table tb_khth_main(
+      kh_th_Id varchar2(14)  primary key,     --  单据号
+      kh_th_Name varchar2(4) references tb_khinfo(kh_id),  --客户名
+      kh_th_date date,           --日期
+      kh_th_chName varchar2(20) references tb_ckinfo(ck_ID),  --入货仓
+      kh_th_ytje number(7,2),          --应退金额
+      kh_th_stje number(7,2),          -- 实退金额
+      kh_th_jbr  varchar2(20),        -- 经办人
+      kh_th_czy  varchar2(20),        -- 操作员
+      kh_th_bz varchar2(50)         --备注
+      );
+
+insert into tb_khth_main values('XT100603040001','0005',to_date('2010-10-01','YYYY-MM-DD'),'001',10.00,10.00,'小熊','小思',null);
+insert into tb_khth_main values('XT100603040002','0005',to_date('2010-10-01','YYYY-MM-DD'),'001',20.00,20.00,'小熊','小思',null);
+insert into tb_khth_main values('XT100603040003','0005',to_date('2010-10-01','YYYY-MM-DD'),'001',30.00,30.00,'小熊','小思',null);
+
+
+--查看表全部数据 
+select * from tb_khth_main;
+--删除表
+drop table tb_khth_main;      
+
+delete   tb_khth_main
+-------------------------------------------------------------
+--13)  客户退货单详表(tb_khth_detail)--------------------------注册
+--( 商品号, 单号, 数量, 总金额 )
+create table tb_khth_detail(
+      khthd_thxdId varchar2(7) references tb_spinfo(sp_id),     --商品号
+      khthd_dh varchar2(14) REFERENCES tb_khth_main(kh_th_Id), --单号
+      khthd_num number(5),     --数量,
+      khthd_zje number(7,2)    --总金额
+      );   
+insert into tb_khth_detail values('5100002','XT100603040001',10,10);
+insert into tb_khth_detail values('5100003','XT100603040002',10,20);
+insert into tb_khth_detail values('5200002','XT100603040003',10,30);
+
+
+
+--查看表全部数据        
+select * from tb_khth_detail;
+--删除表
+drop table tb_khth_detail;      
+ delete   tb_khth_detail
+      
+-------------------------------------------------------------
+--14)  员工表(tb_yginfo)  --------------------------注册
+--( ID,  姓名, 职务, 电话, 联系地址, 备注 )
+create table tb_yginfo(
+      yg_Id varchar2(5) primary key,    -- ID
+      yg_Name varchar2(20),       --姓名
+      yg_zw varchar2(10),        -- 职务
+      yg_tell varchar2(11),         --电话,
+      yg_address varchar2(20),         --联系地址
+      yg_bz varchar2(50)         --备注
+      );
+      
+      
+insert into tb_yginfo values('0001','小周','主管','52144121','周家村',null);
+insert into tb_yginfo values('0002','小熊','主管','52149121','熊家村',null);
+insert into tb_yginfo values('0003','小朱','主管','521412121','朱家村',null);
+insert into tb_yginfo values('0004','小王','总主管','58812121','王家村',null);
+insert into tb_yginfo values('0005','小何','普通员工','521412121','何家村',null);
+insert into tb_yginfo values('0006','小卡','普通员工','521412121','卡家村',null);
+insert into tb_yginfo values('0007','小可','普通员工','521412121','可家村',null);
+insert into tb_yginfo values('0008','小思','普通员工','521412121','思家村',null);
+insert into tb_yginfo values('0009','小敏','普通员工','521412121','敏家村',null);
+
+
+--查看表全部数据        
+select * from tb_yginfo;
+--删除表
+drop table tb_yginfo;      
+      
+-------------------------------------------------------------
+--15)  员工权限(tb_ygqx)    --------------------------注册 
+--( 员工号, 采购权, 库存管理权,销售权 )
+create table tb_ygqx(
+      yg_Id varchar2(5) REFERENCES tb_yginfo(yg_Id),
+      yg_zgq varchar2(2),
+      yg_kcglq varchar2(2),
+      yg_xsq varchar2(2)
+      );
+      insert into tb_ygqx values('0001','是','是','是');
+      insert into tb_ygqx values('0002','是','是','是');
+      insert into tb_ygqx values('0003','是','是','是');
+      insert into tb_ygqx values('0004','是','是','是');
+      insert into tb_ygqx values('0005','否','否','是');
+      insert into tb_ygqx values('0006','否','否','是');
+      insert into tb_ygqx values('0007','否','否','是');
+      insert into tb_ygqx values('0008','否','否','是');
+      insert into tb_ygqx values('0009','否','否','是');
+      
+   
+--查看表全部数据        
+select * from tb_ygqx;
+--删除表
+drop table tb_ygqx;      
+      
+-------------------------------------------------------------
+--16)  库存调拔总表( tb_kctb_main)   --------------------------注册 
+--( ID,  调出库  , 调入库,  日期,  经办人, 操作员 )
+  create table tb_kctb_main(
+      kctb_Id varchar2(14) constraint tb_info_pk primary key,   --ID
+      kctb_ckId varchar2(3) references tb_ckinfo(ck_Id),     --调出库
+      kctb_lkId varchar2(3) references tb_ckinfo(ck_Id),     --调入库
+      kctb_tbdate date,             --日期
+      kctb_jbr  varchar2(20),           --经办人
+      kctb_czy  varchar2(20),           --操作员
+      kctb_bz varchar2(50)          -- 备注
+      );
+   
+insert into tb_kctb_main values('DB100809020001','001','003',to_date('2010-10-01','YYYY-MM-DD'),'小朱','小敏',null);
+insert into tb_kctb_main values('DB100809020003','001','003',to_date('2010-10-01','YYYY-MM-DD'),'小朱','小敏',null);
+insert into tb_kctb_main values('DB100809020002','001','003',to_date('2010-10-01','YYYY-MM-DD'),'小朱','小敏',null);
+
+
+
+ --查看表全部数据 
+select * from tb_kctb_main;
+--删除表
+drop table tb_kctb_main;     
+      delete tb_kctb_main
+-------------------------------------------------------------
+--17)  库存调拔详表(tb_kctb_detail)--------------------------注册
+--( 商品号,单号(FK), 数量, 总金额 )
+
+create table tb_kctb_detail(
+      kctbd_spId varchar2(7) references tb_spinfo(sp_Id),
+      kctbd_tbdh varchar2(14) references tb_kctb_main(kctb_Id),
+      kctbd_num number(5),
+      kctbd_tbzje number(7,2)
+      );
+insert into tb_kctb_detail values('5100001','DB100809020001',4,14.00);
+insert into tb_kctb_detail values('5100002','DB100809020001',7,34.00);  
+insert into tb_kctb_detail values('5100003','DB100809020002',8,78.00);
+      
+--查看表全部数据        
+select * from tb_kctb_detail;
+--删除表
+drop table tb_kctb_detail;      
+delete tb_kctb_detail
+      
+-------------------------------------------------------------
+--18)  拆分单总表(tb_cf_main)  --------------------------注册
+--( 拆分单号 , 拆分库, 日期, 被拆商品编号, 拆分数量, 经办人, 操作员,备注 )
+
+
+create table tb_cf_main(
+      cf_Id varchar2(14) primary key,       --拆分单号
+      cf_lk varchar2(3) references tb_ckinfo(ck_Id),   --拆分库
+      cf_date date,           --日期,
+      cf_bcfspId varchar2(7) references tb_spinfo(sp_Id),   --被拆商品编号
+      cf_cfNum number(5),    -- 拆分数量
+      cf_jbr  varchar2(20),     --经办人
+      cf_czy  varchar2(20),     --操作员
+      cf_bz varchar2(50)     --备注
+      );
+insert into tb_cf_main values('CF090804030001','001',to_date('2010-10-01','YYYY-MM-DD'),'5100003',10,'小王','小何',null);
+insert into tb_cf_main values('CF090804030002','001',to_date('2010-10-01','YYYY-MM-DD'),'5100001',10,'小王','小何',null);
+insert into tb_cf_main values('CF090804030003','001',to_date('2010-10-01','YYYY-MM-DD'),'5100005',10,'小王','小何',null);
+
+--查看表全部数据 
+select * from tb_cf_main;
+--删除表
+drop table tb_cf_main; 
+      
+      
+-------------------------------------------------------------
+--19)  拆分单详表(tb_cf_detail)  --------------------------注册
+-- ( 商品号, 单号(FK), 数量, 总金额 )
+create table tb_cf_detail(
+      cfd_spId varchar2(7) references tb_spinfo(sp_Id),
+      cfd_xbId varchar2(14) references tb_cf_main(cf_Id),
+      cfd_num number(5),
+      cfd_zje number(7,2)
+      );
+      
+insert into tb_cf_detail values('5100003','CF090804030001',10,10.00);
+insert into tb_cf_detail values('5100004','CF090804030001',10,10.00);
+insert into tb_cf_detail values('5100001','CF090804030002',10,10.00);
+insert into tb_cf_detail values('5100002','CF090804030003',10,10.00);
+
+
+ --查看表全部数据
+select * from tb_cf_detail;
+--删除表
+drop table tb_cf_detail; 
+      
+      
+-------------------------------------------------------------
+--20)  捆绑单总表(tb_kb_main)  --------------------------注册
+--( 拆分单号 , 捆绑库, 日期,捆绑成商品, 绑成数量, 经办人, 操作员, 备注 )
+create table tb_kb_main(
+      kb_Id varchar2(14) primary key,      -- 拆分单号
+      kb_ck varchar(3) references tb_ckinfo(ck_Id),     --捆绑库
+      kb_date date,           --日期
+      kb_cspId varchar2(7) references tb_spinfo(sp_Id), --捆绑成商品
+      kb_Num number(5),           --绑成数量
+      kb_jbr  varchar2(20),        -- 经办人
+      kb_czy  varchar2(20),         --操作员
+      kb_bz varchar2(50)         --备注
+      );
+      
+      
+insert into tb_kb_main values('KB101102030001','001',to_date('2010-10-01','YYYY-MM-DD'),'5100005',2,'小朱','小敏',null);
+insert into tb_kb_main values('KB101102030002','001',to_date('2010-10-01','YYYY-MM-DD'),'5100002',5,'小朱','小敏',null);
+insert into tb_kb_main values('KB101102030003','001',to_date('2010-10-01','YYYY-MM-DD'),'5100003',10,'小朱','小敏',null);
+
+
+
+--查看表全部数据        
+select * from tb_kb_main;
+--删除表
+drop table tb_kb_main;      
+      
+      
+-------------------------------------------------------------
+--21)  捆绑单详表(tb_kb_detail) --------------------------注册
+--( 商品号, 单号(FK), 数量, 总金额 )
+create table tb_kb_detail(
+      kbd_spId varchar2(7) references tb_spinfo(sp_Id),
+      kbd_cdId varchar2(14) references tb_kb_main(kb_Id),
+      kbd_num number(5),
+      kbd_zje number(7,2)
+      );
+      
+      insert into tb_kb_detail values('5100005','KB101102030001',2,7.00);
+      insert into tb_kb_detail values('5100002','KB101102030001',5,10.00);
+      insert into tb_kb_detail values('5100003','KB101102030001',10,20.00);
+      
+      
+--查看表全部数据        
+select * from tb_kb_detail;
+--删除表
+drop table tb_kb_detail;      
+      
+      
+-------------------------------------------------------------
+--22)  报损总表 (tb_bs_main) --------------------------注册
+--(单号 , 仓库名, 日期,经办人, 操作员,备注 )
+create table tb_bs_main(
+      bs_Id varchar2(14) primary key,       --单号
+      bs_ck varchar(3) references tb_ckinfo(ck_Id),   --仓库名
+      bs_date date,           --日期
+      bs_jbr  varchar2(20),         --经办人
+      bs_czy  varchar2(20),         --操作员
+      bs_bz varchar2(50)         --备注
+      );
+insert into tb_bs_main values('BS1007060002','001',to_date('2010-10-20','YYYY-MM-DD'),'小熊','小思',null);
+insert into tb_bs_main values('BS1007060001','001',to_date('2010-10-08','YYYY-MM-DD'),'小熊','小思',null);
+insert into tb_bs_main values('BS1007060003','001',to_date('2010-10-10','YYYY-MM-DD'),'小熊','小思',null);
+
+ --查看表全部数据        
+select * from tb_bs_main;
+--删除表
+drop table tb_bs_main;     
+      
+      
+-------------------------------------------------------------
+--23)  报损详表(tb_bs_detail) --------------------------注册
+--( 商品号, 单号(FK), 数量, 总金额 )
+create table tb_bs_detail(
+      bsd_xspId varchar2(7) references tb_spinfo(sp_Id),
+      bsd_xbId varchar2(14) references tb_bs_main(bs_Id),
+      bsd_num number(5),
+      bsd_zje number(7,2)
+      );
+      
+      insert into tb_bs_detail values('5100002','BS1007060001',10,10.00);
+      insert into tb_bs_detail values('5100001','BS1007060002',10,35.00);
+      insert into tb_bs_detail values('5100004','BS1007060003',10,20.00);
+      insert into tb_bs_detail values('5200002','BS1007060001',10,10.00);
+      insert into tb_bs_detail values('5200001','BS1007060002',10,35.00);
+      insert into tb_bs_detail values('5100006','BS1007060003',10,20.00);
+      
+      
+--查看表全部数据        
+select * from tb_bs_detail;
+--删除表
+drop table tb_bs_detail;      
+      
+      
+-------------------------------------------------------------
+--24)  报溢总表(tb_by_main) --------------------------注册
+--( 单号 , 仓库名, 日期,经办人, 操作员,备注 )
+create table tb_by_main(
+      by_Id varchar2(14) primary key,       --单号
+      by_ck varchar(3) references tb_ckinfo(ck_Id),  -- 仓库名
+      by_date date,           --日期
+      by_jbr  varchar2(20),         --经办人
+      by_czy  varchar2(20),        --操作员
+      by_bz varchar2(50)         --备注
+      );
+      
+insert into tb_by_main values('BY100305030003','001',to_date('2010-10-10','YYYY-MM-DD'),'小周','小敏',null);
+insert into tb_by_main values('BY100305030001','001',to_date('2010-10-10','YYYY-MM-DD'),'小周','小敏',null);
+insert into tb_by_main values('BY100305030002','001',to_date('2010-10-10','YYYY-MM-DD'),'小周','小敏',null);
+
+      
+--查看表全部数据        
+select * from tb_by_main;
+--删除表
+drop table tb_by_main;      
+      
+      
+-------------------------------------------------------------
+--25)  报溢详表(tb_by_detail) --------------------------注册
+--( 商品号,  单号(FK), 数量, 总金额 )
+create table tb_by_detail(
+      byd_spId varchar2(7) references tb_spinfo(sp_Id),
+      byd_cdId varchar2(14) references tb_by_main(by_Id),
+      byd_num number(5),
+      byd_zje number(7,2)
+      );
+  
+insert into tb_by_detail values('5100002','BY100305030001',4,4.00);    
+  
+insert into tb_by_detail values('5100001','BY100305030002',8,28.00);
+  
+insert into tb_by_detail values('5100004','BY100305030001',4,7.00);  
+
+
+--查看表全部数据        
+select * from tb_by_detail;
+--删除表
+drop table tb_by_detail;      
+      
+      
+-------------------------------------------------------------
+--26)  盘点总表(tb_pd_main) ----------------------------注册
+--( 单号(PK) , 盘点仓库, 日期 , 经办人,操作员, 商品条数, 高品总数, 备注 )
+ create table tb_pd_main(
+      pd_Id varchar2(14) primary key,       --单号(PK)
+      pd_ck varchar(3) references tb_ckinfo(ck_Id),   --盘点仓库
+      pd_date date,       --日期
+      pd_jbr  varchar2(20),     --经办人
+      pd_czy  varchar2(20),     --操作员
+      pd_ypts number(5),       --商品条数
+      pd_ypzs number(5),      -- 商品总数
+      pd_bz varchar2(50)    -- 备注
+      );
+ insert into tb_pd_main values('PD100101020002','002',to_date('2010-10-20','YYYY-MM-DD'),'小王','小卡',5,8,null);
+ insert into tb_pd_main values('PD100101020003','001',to_date('2010-10-20','YYYY-MM-DD'),'小王','小卡',8,8,null);
+ insert into tb_pd_main values('PD100101020001','003',to_date('2010-10-20','YYYY-MM-DD'),'小王','小卡',2,8,null);
+   
+   
+--查看表全部数据        
+select * from tb_pd_main;
+--删除表
+drop table tb_pd_main;      
+      
+      
+-------------------------------------------------------------
+--27)  盘点详表(tb_pd_detail) --------------------------注册
+--( 商品号(FK),  单号(FK), 数量, 总金额 )
+create table tb_pd_detail(
+      pdd_spId varchar2(7) references tb_spinfo(sp_Id),
+      pdd_sbId varchar2(14) references tb_pd_main(pd_Id),
+      pdd_num number(5),
+      pdd_zje number(7,2)
+      );
+      insert into tb_pd_detail values('5100002','PD100101020002',5,5.00);
+      insert into tb_pd_detail values('5100001','PD100101020002',5,17.50);
+      insert into tb_pd_detail values('5100003','PD100101020001',5,5.00);
+      
+      
+                  
+ --查看表全部数据        
+select * from tb_pd_detail;
+--删除表
+drop table tb_pd_detail;     
+      
+
+-------------------------------------------------------------
+--29)  会员表  (tb_hyinfo)  --------------------------注册
+--( 编号(PK),性名,级别,会员积分, 会员状态, 会员级别(FK), 使用期限,会员生日,
+--   联系电话, 加入日期,截止日期,是否积分升级,备注)
+create table tb_hyinfo(
+      hy_Id varchar2(4) primary key,      --编号(PK
+      hy_Name varchar2(20),        --姓名
+      hy_Level varchar2(10) references tb_hyjb(hyjb_Id),  --级别
+      hy_jf number(4)  ,   --会员积分
+      hy_zt varchar2(4),         --会员状态
+      hy_syqx varchar2(4),         --是否有使用期限
+      hy_sr date,           --会员生日
+      hy_tell varchar2(11),         --联系电话
+      hy_jldate date,          --加入日期
+      hy_jzdate date,           --截止日期
+      hy_isjfsj varchar2(2),        --是否积分升级
+      hy_bz varchar2(50),      
+      hy_secret varchar2(6)   
+      
+);
+
+
+insert into tb_hyinfo values('h001','小酷','1',10,'可用','一年',to_date('1979-10-20','YYYY-MM-DD'),'1545551',to_date('2010-10-20','YYYY-MM-DD'),to_date('2011-10-20','YYYY-MM-DD'),'是',null,'123456');
+insert into tb_hyinfo values('h002','小尼','2',10,'可用','一年',to_date('1979-10-20','YYYY-MM-DD'),'1545551',to_date('2010-10-20','YYYY-MM-DD'),to_date('2011-10-20','YYYY-MM-DD'),'是',null,'123456');
+insert into tb_hyinfo values('h003','小都','3',10,'可用','两年',to_date('1985-05-20','YYYY-MM-DD'),'1545551',to_date('2010-10-20','YYYY-MM-DD'),to_date('2012-10-20','YYYY-MM-DD'),'是',null,'123456');
+insert into tb_hyinfo values('h004','小第','2',10,'可用','一年',to_date('1989-11-20','YYYY-MM-DD'),'1545551',to_date('2010-10-20','YYYY-MM-DD'),to_date('2011-10-20','YYYY-MM-DD'),'是',null,'123456');
+insert into tb_hyinfo values('h005','小过','1',10,'可用','一年',to_date('1976-12-20','YYYY-MM-DD'),'1545551',to_date('2010-10-20','YYYY-MM-DD'),to_date('2011-10-20','YYYY-MM-DD'),'是',null,'123456');
+insert into tb_hyinfo values('h007','普通用户','4',10,'可用','一年',to_date('1976-12-20','YYYY-MM-DD'),'1545551',to_date('2010-10-20','YYYY-MM-DD'),to_date('2011-10-20','YYYY-MM-DD'),'是',null,'123456');
+      
+
+
+ --查看表全部数据        
+select * from tb_hyinfo;
+--删除表
+drop table tb_hyinfo;     
+      
+      
+-------------------------------------------------------------
+--30)  会员销费表 (tb_hyxfb)   --------------------------注册
+--(会员编号(PK), 账户金额, 总消费额, 消费次数, )
+create table tb_hyxfb(
+      hyxf_Id  varchar2(4) references tb_hyinfo(hy_Id), --会员编号(PK)
+      hyxf_xhye number(7,2),      --账户金额
+      hyxf_zxf number(7,2),       -- 总消费额
+      hyxf_xfcs number(4)         --消费次数
+      );
+insert into tb_hyxfb values('h001',1200.00,1000.00,100);
+insert into tb_hyxfb values('h002',1900.00,100.00,20);
+insert into tb_hyxfb values('h003',1500.00,150.00,10);
+update tb_hyxfb set hyxf_xhye = hyxf_xhye+'10' where hyxf_Id = 'h001'
+      
+--查看表全部数据        
+select * from tb_hyxfb;
+--删除表
+drop table tb_hyxfb;      
+      
+      
+-------------------------------------------------------------
+--31)  会员级别表  ( tb_hyjb)  --------------------------注册
+--( 级别编号(PK), 级别名称, 级别折扣,积分下限,积分上限)
+create table tb_hyjb(
+     hyjb_Id varchar2(2) primary key,  --级别编号(PK)
+     hyjb_Name varchar(10),     --级别名称,
+     hyjb_jbzk number(2,1),     --级别折扣
+     hyjb_jfxx number(4),     --积分下限
+     hyjb_jfsx number(4)     --积分上限
+);
+
+ALTER TABLE tb_hyjb          
+  ADD CONSTRAINTS tb_hyjb CHECK (hyjb_jbzk >0 and hyjb_jbzk <=1);
+  
+insert into tb_hyjb values('1','普通会员',0.9,0,200);
+insert into tb_hyjb values('2','中级会员',0.8,200,500);
+insert into tb_hyjb values('3','高级会员',0.7,500,1000);
+insert into tb_hyjb values('4','普通客户',1,0,0);
+
+
+ --查看表全部数据 
+select * from tb_hyjb;
+--删除表
+drop table tb_hyjb;    
+     
+     
+-------------------------------------------------------------
+--32)  会员续费表  ( tb_hyxf)  --------------------------注册
+--( 交费日期, 会员卡号, 续费金额, 实际支付,操作员,备注)
+create table tb_hyxf(
+     hyxf_jfdate date,    -- 交费日期
+     hyxf_Id varchar2(4) references tb_hyinfo(hy_Id), --会员卡号
+     hyxf_sfje number(7,2),   --续费金额
+     hyxf_sjzf number(7,2),    -- 实际支付
+     hyxf_czy  varchar2(20),   --  操作员
+     hyxf_bz varchar2(50)     --备注
+     );
+     
+insert into tb_hyxf values(to_date('2010-12-20','YYYY-MM-DD'),'h001','100.00',100.00,'小周',null);
+insert into tb_hyxf values(to_date('2010-12-20','YYYY-MM-DD'),'h002','100.00',100.00,'小周',null);
+insert into tb_hyxf values(to_date('2010-12-20','YYYY-MM-DD'),'h003','100.00',100.00,'小周',null);
+     
+--查看表全部数据        
+select * from tb_hyxf;
+--删除表
+drop table tb_hyxf;     
+     
+-------------------------------------------------------------
+--33)  POS端消费表( tb_posxfb_main)--------------------------注册
+--( 单号,日期, 导购员, 仓库, 顾客,应付金额,实付金额,付款方式, 备注)
+create table tb_posxfb_main(
+     posxfb_Id varchar2(14) primary key,    -- 单号
+     posxfb_date date,           --日期
+     posxfb_dgyId varchar2(5)  references tb_yginfo(yg_Id), -- 导购员
+     posxfb_ckId varchar2(3) references tb_ckinfo(ck_Id),   --仓库
+     posxfb_gkjb varchar2(10) references tb_hyinfo(hy_Id),  --顾客(会员非会员)------2010-10-28改动
+     posxfb_yfje number(7,2),            -- 应付金额
+     posxfb_sfje number(7,2),            --实付金额
+     posxfb_fkfs varchar2(1) references tb_kh_xffs(kh_xffs_Id),   --付款方式
+     posxfb_czy varchar2(4) references tb_usernofo(user_Id),    --操作员
+     posxfb_jbr varchar2(5) references tb_yginfo(yg_id),
+     posxfb_bz varchar2(50)       
+     );
+insert into tb_posxfb_main values('XS1002040001',to_date('2010-12-20','YYYY-MM-DD'),'0009','001','h001',70.00,70.00,'1','02','0001',null);
+insert into tb_posxfb_main values('XS1002040002',to_date('2010-12-21','YYYY-MM-DD'),'0008','001','h002',140.00,140.00,'1','02','0002',null);
+insert into tb_posxfb_main values('XS1002040003',to_date('2010-12-22','YYYY-MM-DD'),'0007','001','h003',120.00,120.00,'1','02','0003',null);
+insert into tb_posxfb_main values('XS1002040004',to_date('2010-12-23','YYYY-MM-DD'),'0008','001','h001',30.00,30.00,'1','02',null,null);
+     
+ --查看表全部数据        
+select * from tb_posxfb_main;
+--删除表
+drop table tb_posxfb_main;    
+     
+     
+ -------------------------------------------------------------
+--34)  POS端消费明表( tb_posxfb_detail)--------------------------注册
+--( 商品号,单号(FK) ,数量, 总金额)
+
+create table tb_posxfb_detail(   
+      posxfbd_spId varchar2(7) references tb_spinfo(sp_Id),     --商品号
+      posxfbd_Id varchar2(14) references tb_posxfb_main(posxfb_Id),  -- 单号(FK)
+      posxfbd_num number(5),             --数量
+      posxfbd_zje number(7,2)           --总金额
+      );
+insert into tb_posxfb_detail values('5100001','XS1002040001',20,70.00);
+insert into tb_posxfb_detail values('5100002','XS1002040001',40,140.00);
+insert into tb_posxfb_detail values('5100003','XS1002040002',120,120.00);
+insert into tb_posxfb_detail values('5100004','XS1002040003',20,30.00);
+
+ --查看表全部数据        
+select * from tb_posxfb_detail;
+--删除表
+drop table tb_posxfb_detail;     
+      
+      
+----------------------------------------------------------
+--35)  客户消费方式表(tb_kh_xffs)  --------------------------注册
+--( 编号, 名称)    (名称有: 现金,储值卡,信用卡, 代金券)
+create table tb_kh_xffs(
+     kh_xffs_Id varchar2(1) primary key,
+     kh_xffs_Name varchar(20)
+     
+     );
+insert into tb_kh_xffs values(1,'现金');
+insert into tb_kh_xffs values(2,'储值卡');
+insert into tb_kh_xffs values(3,'信用卡');
+insert into tb_kh_xffs values(4,'代金券');
+
+
+--查看表全部数据        
+select * from tb_kh_xffs;
+--删除表
+drop table tb_kh_xffs;     
+     
+     
+-------------------------------------------------------------
+--36) 商品类别表  (类别ID, 类别名)   --------------------------注册
+    create table tb_sblb(
+        sblb_Id varchar2(2) primary key,
+        sblb_Name varchar2(10)
+       
+        );
+insert into tb_sblb values('01','酒类');
+insert into tb_sblb values('02','饮料类');
+insert into tb_sblb values('03','食品类');
+insert into tb_sblb values('04','水果类');
+insert into tb_sblb values('05','生活用品类');  
+insert into tb_sblb values('06','体育类');
+insert into tb_sblb values('07','服装类');  
+insert into tb_sblb values('08','书籍类');
+insert into tb_sblb values('09','儿童类');  
+        
+
+update tb_sblb lb set lb.sblb_name where lb.sblb_name ='' 
+
+--查看表全部数据        
+select * from tb_sblb;
+--删除表
+drop table tb_sblb;
+
+
+------------------------------------------------------------
+--37)  POS端退货表( tb_posth_main) --------------------------注册
+--(退货单号,销售单号 , 退到仓库,应退金额,实退金额,操作员, 备注)
+create table tb_posth_main(
+     posth_Id varchar2(14) primary key,		-- 单号
+	   posxfd_Id varchar2(14) references tb_posxfb_main(posxfb_Id),
+     posth_date date,               --退货日期
+     posth_dgyId varchar2(5)  references tb_yginfo(yg_Id),-- 导购员
+     posth_ckId varchar2(3) references tb_ckinfo(ck_Id), 	--仓库
+     posth_yfje number(7,2),						-- 应退金额
+     posth_sfje number(7,2), 						--实退金额
+     posth_czy varchar2(20) references tb_usernofo(user_Id),      --操作员
+     posth_jbr varchar2(5) references tb_yginfo(yg_id),
+     posth_bz  varchar2(50) 	
+     );
+     
+    insert into tb_posth_main values('XT10020501002','XS1002040001',to_date('2010-10-20','YYYY-MM-DD'),'0009','001',70.00,70.00,'02','0001',null);
+    insert into tb_posth_main values('XT10020501001','XS1002040002',to_date('2010-9-10','YYYY-MM-DD'),'0008','002',140.00,140.00,'02','0002',null);
+    
+    
+--查看表全部数据
+select * from tb_posth_main;
+--删除表
+drop table tb_posth_main;
+-------------------------------------------------------------
+--38)  POS端退货明表( tb_posxth_detail)--------------------------注册
+--( 商品号,单号(FK) ,数量, 总金额)
+
+create table tb_posxth_detail(   
+      posxth_spId varchar2(7) references tb_spinfo(sp_Id), 		--商品号
+      posxth_Id varchar2(14) references tb_posth_main(posth_Id),	-- 单号(FK)
+      posxth_num number(5), 						--数量
+      posxth_zje number(7,2) 					--总金额
+      );
+      
+insert into tb_posxth_detail values('5100001','XT10020501002',20,70.00);
+insert into tb_posxth_detail values('5100002','XT10020501001',40,140.00);
+insert into tb_posxth_detail values('5100003','XT10020501002',20,70.00);
+insert into tb_posxth_detail values('5200002','XT10020501001',40,140.00);
+
+--查看表全部数据        
+select * from tb_posxth_detail;
+--删除表
+drop table tb_posxth_detail;
+----------------------------------------------------------------------
+--39 颜色--------------------------注册
+create table tb_color(
+     color_name varchar2(5) primary key   --颜色名
+     );
+insert into tb_color values('红');
+insert into tb_color values('白');
+insert into tb_color values('绿');
+insert into tb_color values('蓝');
+insert into tb_color values('黑');
+insert into tb_color values('黄');
+insert into tb_color values('棕');
+insert into tb_color values('淡黄');
+insert into tb_color values('淡蓝');
+insert into tb_color values('淡红');
+
+--查看表全部数据
+select * from tb_color;
+--删除表
+drop table tb_color;
+--------------------------------------------------------------
+--40 单位表--------------------------注册
+ create table tb_danwei(
+     danwei_name varchar2(5) primary key   --单位名
+     );
+
+insert into tb_danwei values('个');
+insert into tb_danwei values('只');
+insert into tb_danwei values('瓶');
+insert into tb_danwei values('包');
+insert into tb_danwei values('斤');
+insert into tb_danwei values('千克');
+insert into tb_danwei values('盒');
+insert into tb_danwei values('打');
+insert into tb_danwei values('捆');
+
+--查看表全部数据 
+select * from tb_danwei;
+--删除表
+drop table tb_danwei;
+-------------------------------------------------------------
+--41  调价历史表
+  create table tb_sptj(
+  
+     tj_date date,  --调价日期
+     tj_spID varchar2(7) references tb_spinfo(sp_id),  --调价商品号
+     tj_bz varchar2(100)     ------调价内容
+     );
+
+--查看表全部数据        
+select * from tb_sptj;
+--删除表
+drop table tb_sptj;
+
+-------------------------------------------------------------
+--42. 日节单表
+ create table tb_dayCount(
+   dayC_id varchar2(15) primary key,  --日节单
+   dayC_date date,                    --日节日期
+   dayC_num number(5),                --数量
+   dayC_zje number(7,2),              --总经额
+   dayC_czy varchar2(4) references tb_usernofo(user_Id)
+ );
+
+
+--查看表全部数据  
+      
+select * from tb_dayCount rj where rj.dayc_date between ? and ? and rj.dayc_id like '%%';
+--删除表
+drop table tb_dayCount;
+
+
+insert into tb_dayCount values('RJ20011012002',to_date('2008-10-02','YYYY-MM-DD'),56,521.3,'02');
+insert into tb_dayCount values('RJ20014012002',to_date('2010-6-30 12:20:30 ','yyyy-mm-dd hh24:MI:ss'),32,521.3,'03');
+-------------------------------------------------------------
+
+--43 出款表
+create table tb_outPay(
+    out_id varchar2(15) primary key,  --出款单
+    out_date date,           --出款日期
+    out_zje number(7,2),     --出款金额
+    out_jbr varchar2(4)  references tb_usernofo(user_Id),   --收银员
+    out_czy varchar2(4) references tb_usernofo(user_Id)  
+    );
+
+--查看表全部数据        
+select * from tb_outPay;
+--删除表
+drop table tb_outPay;
+insert into tb_outPay values('CK20100302003',to_date('2008-10-02','YYYY-MM-DD'),551.3,'02','01');
+insert into tb_outPay values('CK20122302004',to_date('2010-11-02','YYYY-MM-DD'),521.3,'02','01');
+
+
+---------------------------------------------------------------
+-- 44  入款单
+create table tb_inPay(
+    in_id varchar2(15) primary key,  --入款单
+    in_date date,           --入款日期
+    in_zje number(7,2),     --入款金额
+    in_jbr varchar2(4)  references tb_usernofo(user_Id),   --收银员
+    in_czy varchar2(4) references tb_usernofo(user_Id) 
+    );
+
+--查看表全部数据        
+select * from tb_inPay;
+--删除表
+drop table tb_inPay;
+
+insert into tb_inPay values('LK20100302113',to_date('2009-08-02','YYYY-MM-DD'),1001.3,'02','01');
+insert into tb_inPay values('LK20122302134',to_date('2010-11-02','YYYY-MM-DD'),1201.3,'02','01');
+
+------------------------------------------------
+
+------------------------------------------------
+--46  联系供货商表（tb_ghsconnect）
+--（供货商，联系时间，联系内容，经办人）
+create table tb_ghsconnect(
+       ghsc_ghs varchar2(7)  REFERENCES tb_ghsinfo(ghs_Id),--供货商
+       ghsc_date date ,                                     --联系时间
+       ghsc_detail varchar2(50) not null,                   --联系内容
+       ghsc_jbr varchar2(20)  not null                     --经办人
+       );
+       
+delete from tb_ghsconnect 
+       where ghsc_detail = ''
+  
+--查看表全部数据        
+select * from tb_ghsconnect;
+--删除表
+drop table tb_ghsconnect;
+------------------------------------------------     
+--47  联系客户表（tb_khconnect）
+--（供货商，联系时间，联系内容，经办人）
+create table tb_khconnect(
+       khc_Id varchar2(4)  REFERENCES tb_khinfo(kh_Id),   --客户号
+       khc_date date,                                     --联系时间
+       khc_detail varchar2(50) not null,                  --联系内容
+       khc_jbr varchar2(20)  not null                     --经办人
+       );
+       
+ --查看表全部数据        
+select * from tb_khconnect;
+--删除表
+drop table tb_khconnect;
+------------------------------------------------
+--48  联系客户表（tb_ygconnect）
+--（员工号，时间，日志）
+create table tb_ygconnect(
+      ygc_ID varchar2(5) references tb_yginfo(yg_Id),
+      ygc_date date,
+      ygc_log varchar2(50) not null
+      );
+      
+ --查看表全部数据        
+select * from tb_ygconnect;
+--删除表
+drop table tb_ygconnect;
+ ------------------------------------------------
+--49 日志文件表
+create table tb_logmessage(
+   m_date date ,      --日期
+   m_user_id varchar2(4) references tb_usernofo(user_Id),    --用户  
+   m_log varchar2(100)     --内容
+   );
+ insert into tb_logmessage  values (sysdate,'01','登陆');
+ insert into tb_logmessage  values (sysdate,'01','退出');
+ 
+ --查看表全部数据        
+select * from tb_logmessage;
+--删除表
+drop table tb_logmessage;
+---------------------------------------------------
+
+
+
+
+--50 其它数据   --对一些其它数据功能的描述
+create table tb_other(
+
+    tb_name varchar2(20) primary key,    --功能名
+    tb_isReal varchar2(5)    --是否启用
+    
+    );
+    
+insert into tb_other  values ('Taday_Remind','1');   --今日提醒功能
+insert into tb_other  values ('AutoBakeData','1');   --是否自动备份
+insert into tb_other  values ('BakeTime','6');       --是否自动备份
+
+  update tb_other ot set ot.tb_isreal = '' where ot.tb_name = 'Taday_Remind'
+
+ --查看表全部数据        
+select * from tb_other;
+--删除表
+drop table tb_other;
+
+select ot.tb_isreal from tb_other ot where ot.tb_name = 'Taday_Remind';
+
+update tb_other ot set ot.tb_isreal = '0'  where ot.tb_name = 'Taday_Remind'
+
+
+
+-----------------------------------------------------------
+--51 年终结算表
+
+create table tb_nzjs(
+ nz_year varchar(4) constraint nzjs_pk primary key ,            --结算年份
+ nz_date date ,                   --结算日期
+ nz_cg_ds  number(6),            --采购单数
+ nz_cg_th_zs number(6),          --采购退货总数
+ nz_cg_sl number(6),            --总计采购数量
+ nz_cg_je number(8,2),             --总计采购金额
+ nz_xs_ds number(6),              --销售单数
+ nz_xs_th_zs number(6),           --销售退货总数
+ nz_xs_sl number(6),              --总计销售数量
+ nz_xs_je number(8,2),           --总计销售金额
+ nz_tb_ds number(6),             --调拨单数
+ nz_tb_sl number(6),             --调拨数量
+ nz_bs_ds number(6),           --报损单数
+ nz_bs_sl number(6),             --报损数量
+ nz_bs_je number(8,2),            --报损金额
+ nz_by_ds number(6),             --报溢单数
+ nz_by_sl number(6),             -- 报溢数量
+ nz_by_je number(8,2)            --报溢金额
+    
+)
+
+select * from tb_nzjs;
+
+-------------------------------------------------------------
+--28)  操作员表  ( tb_usernofo)--------------------------注册
+--( 编号(PK),用户名, 密码, 所任职务, 是否POS操作员 )
+create table tb_usernofo(
+      user_Id varchar2(4) primary key,     --编号(PK),
+      user_Name varchar2(20),      --用户名,
+      user_PSW varchar2(20),       --密码,
+      user_srzw varchar2(20),       --所任职务
+      user_isPos varchar2(1)       --是否POS操作员
+      );
+
+      
+ select us.user_name from tb_usernofo us  where user_isPos = '0' 
+    
+insert into tb_usernofo values('01','admin','admin','系统管理员','0');
+insert into tb_usernofo values('06','tmpAdmin','tmpAdmin','系统管理员','0');
+
+insert into tb_usernofo values('02','pos','123456','pos记账员','1');
+insert into tb_usernofo values('03','finey','123456','pos记账员','1');
+
+
+select user_Name from tb_usernofo where user_isPos = '1';
+
+--查看表全部数据        
+select * from tb_usernofo for update;
+--删除表
+drop table tb_usernofo;      
+
+delete tb_usernofo tb where tb.user_id = '01'
+
+update  tb_usernofo tb set tb.user_psw = 'admin' where tb.user_name = 'admin'
+-----------------------------------------------------------
+-- 52 操作员权限表
+   --采购管理,销售管理，库存管理，报表统计，日常管理,系统设置(是或否)
+   
+create table tb_czy_qx(
+   czy_id varchar2(4) references tb_usernofo(user_Id),  ---操作员ID
+   
+   is_cg varchar2(2),   ---采购管理权
+   is_xs varchar2(2),   ---销售管理权
+   is_kc varchar2(2),   ---库存管理权
+   is_bt varchar2(2),   ---报表统计权
+   is_rg varchar2(2),   ---日常管理权
+   is_sz varchar2(2)     --系统设置权
+
+  );
+  
+insert into tb_czy_qx values('01','是','是','是','是','是','是');
+
+insert into tb_czy_qx values('02','是','是','是','是','是','否');
+insert into tb_czy_qx values('03','是','是','是','是','是','否');
+insert into tb_czy_qx values('04','是','是','是','是','是','否');
+insert into tb_czy_qx values('05','是','是','是','是','是','否');
+insert into tb_czy_qx values('06','是','是','是','是','是','否');
+insert into tb_czy_qx values('07','是','是','是','是','是','否');
+
+
+--查看表全部数据        
+select * from tb_czy_qx for update;
+--删除表
+drop table tb_czy_qx;   
+
+
+------------建表结构存放商品盘点属性标志
+create table tb_pdsp_spinfo(
+       pdsp_spid  varchar2(14) primary key references tb_spinfo(sp_id),
+       pdsp_per varchar2(1)       
+       );
+
+insert into tb_pdsp_spinfo values('5100003','1');
+insert into tb_pdsp_spinfo values('5100004','1');
+insert into tb_pdsp_spinfo values('5100005','1');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

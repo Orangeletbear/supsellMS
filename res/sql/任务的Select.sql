@@ -1,0 +1,817 @@
+                          --我的业务语句
+ --1 . 工具栏上的单据查询(主表)
+ --采购进货主表(给定单据号查出数据)
+ select cgm.cg_id,cgm.cg_date,'采购进货单',ghi.ghs_name,
+        cki.ck_name,cgm.cg_yfje,cgm.cg_sfje,
+        cgm.cg_jbr,cgm.cg_bz
+    from tb_cg_main cgm,tb_ghsinfo ghi ,tb_ckinfo cki
+    where cgm.cg_ghs=ghi.ghs_id and cgm.cg_lkid = cki.ck_id
+         and cgm.cg_id like '%cg0001%'; 
+         
+ --采购退货主表(给定单据号查出数据)
+  select cgt.th_id,cgt.th_date,'采购退货单',ghi.ghs_name,
+        cki.ck_name,cgt.th_yfje,cgt.th_sfje,
+        cgt.th_jbr,cgt.th_cgbz
+    from tb_th_main cgt,tb_ghsinfo ghi ,tb_ckinfo cki
+    where cgt.th_ghs=ghi.ghs_id and cgt.th_ckid = cki.ck_id
+         and cgt.th_id like '%th0001%'; 
+         
+  --销售主表(给定单据号查出数据)
+  select sem.xs_id,sem.xs_xsdate,'商品销售单',kh.kh_name,
+        ck.ck_name,sem.xs_ysje,sem.xs_ssje,
+        sem.xs_jbr,sem.xs_bz
+    from tb_sell_main sem ,tb_ckinfo ck,tb_khinfo kh
+    where sem.xs_chname = ck.ck_id and kh.kh_id = sem.xs_khid and sem.xs_id like '%xs0001%'; 
+   --销售退货主表(给定单据号查出数据)
+   select khth.kh_th_id,khth.kh_th_date,'销售退货单',khth.kh_th_name,
+        khth.kh_th_chname,khth.kh_th_ytje,khth.kh_th_stje,
+        khth.kh_th_jbr,khth.kh_th_bz
+    from tb_khth_main khth
+    where  khth.kh_th_id like '%khth0001%';  
+      
+--2 . 工具栏上的单据查询(单据详表)
+  --"商品编号", "商品名称","单位", "规格型号","颜色","单价","数量","总金额"}
+    --采购进货详表(给定单据号查出数据)
+ select sp.sp_id,sp.sp_name,sp.sp_dw,sp.sp_ggxh,
+       sp.sp_color,sp.sp_sj,cgd.cgd_num,(sp.sp_sj*cgd.cgd_num) 总金额
+    from tb_cg_detail cgd,tb_spinfo sp
+    where cgd.cgd_spid = sp.sp_id
+         and cgd.cgd_spdh like 'cg0001'; 
+         
+ --采购退货详表(给定单据号查出数据)
+   select sp.sp_id,sp.sp_name,sp.sp_dw,sp.sp_ggxh,
+       sp.sp_color,sp.sp_sj,cgt.thd_num,(sp.sp_sj*cgt.thd_num) 总金额
+    from tb_th_detail cgt,tb_spinfo sp
+    where cgt.thd_spid = sp.sp_id
+         and cgt.thd_spdh like 'th0001'; 
+         
+  --销售详表(给定单据号查出数据)
+   select sp.sp_id,sp.sp_name,sp.sp_dw,sp.sp_ggxh,
+       sp.sp_color,sp.sp_sj,tb.xsd_num,(sp.sp_sj*tb.xsd_num) 总金额
+    from tb_sell_detail tb,tb_spinfo sp
+    where tb.xsd_id = sp.sp_id
+         and tb.xsd_dh like 'xs0001'; 
+   --销售退货详表(给定单据号查出数据)
+    select sp.sp_id,sp.sp_name,sp.sp_dw,sp.sp_ggxh,
+       sp.sp_color,sp.sp_sj,cgd.khthd_num,(sp.sp_sj*cgd.khthd_num) 总金额
+    from tb_khth_detail cgd,tb_spinfo sp
+    where cgd.khthd_thxdid = sp.sp_id
+         and cgd.khthd_dh like 'khth0001';   
+         
+         
+ --3取出所有仓库名
+ select tb.ck_name
+   from tb_ckinfo tb;
+         
+ --4 库存查询
+        --"商品编号", "商品名称", "规格型号", "单位", 
+        --"库存量","预设售价","生产厂商","颜色","备注"
+   select sp.sp_id,sp.sp_name,sp.sp_ggxh,sp.sp_dw,
+          sp.sp_zdkc,sp.sp_sj,sp.sp_sccs,sp.sp_color,
+          sp.sp_bz 
+      from tb_spinfo sp      
+      where sp.sp_syck = (select tb.ck_Id
+                         from tb_ckinfo tb
+                         where tb.ck_Name  = '主仓库')
+          and sp.sp_lb = (select intb.sblb_id
+                               from tb_sblb intb 
+                               where intb.sblb_name = '饮料类')
+        and( sp.sp_id like '%%' or sp.sp_name like '%%') 
+        and sp.sp_zdkc <> 0;
+ 
+ 
+ ---------------今日提醒上的select 语句
+ 
+ --1库存报警
+ --"商品编号", "商品名称", "规格型号","单位", "颜色","当前库存"
+ 
+  select  tb.sp_id,tb.sp_name,tb.sp_ggxh,tb.sp_dw,
+          tb.sp_color,tb.sp_zdkc
+     from tb_spinfo tb 
+     where tb.sp_zdkc <= 0
+     and (tb.sp_id like '%%' or tb.sp_name like '%%' );
+     
+     
+
+ 
+ --2 应收款提醒
+ --"客户名称", "单据号", "开单日期","应收金额", "实收金额","欠款金额","截止日期","欠款天数","经办人"
+ select * from (
+   select kh.kh_name na,tb.xs_id id,tb.xs_xsdate,tb.xs_ysje,
+         tb.xs_ssje,(tb.xs_ysje-tb.xs_ssje) mon,
+         (tb.xs_xsdate+100) 止日,ceil(sysdate-tb.xs_xsdate) daNum,
+         tb.xs_jbr from  tb_sell_main tb ,tb_khinfo kh 
+         where kh.kh_id = tb.xs_khid ) intb
+    where(intb.id like '%%' or intb.na like '%%') 
+     and intb.daNum > 10 and intb.mon > 0;
+    
+ 
+ 
+ --3 商品过期提醒
+-- "商品编号", "商品名称", "规格型号","颜色", "数量","生产日期","保质期","还剩天数"
+ 
+select * from
+      (select sp.sp_id id,sp.sp_name name,sp.sp_ggxh,
+      sp.sp_color,sp.sp_zdkc,
+          sp.sp_tjdatefrom,sp.sp_tjdateto,ceil(sp.sp_tjdateto-sysdate) daynum
+         from tb_spinfo sp) inta
+     where inta.daynum < 10
+     and inta.id like '%%' or inta.name like '%%';
+
+ 
+ ----------------------------当前库存
+   --1, 库存变动情况---------------外连接
+  -- "商品编号", "商品名称", "单位",
+	--	"库存量", "销售总数","上次进价",
+   -- "成本均价","预设售价","库存总值",
+   --"规格型号","颜色","生产厂商","备注"
+   
+   select sp.sp_id,sp.sp_name,sp.sp_dw,sp.sp_zdkc,
+          intb.sumN,sp.sp_jj,sp.sp_jj,sp.sp_sj,(sp.sp_zdkc*sp.sp_jj),
+          sp.sp_ggxh,sp.sp_color,sp.sp_sccs,sp.sp_bz
+     from tb_spinfo sp,
+         (select tb.xsd_id inid,sum(tb.xsd_num) sumN
+             from tb_sell_detail tb 
+             group by tb.xsd_id ) intb
+     where sp.sp_id = intb.inid(+) 
+     and sp.sp_syck = (select tb.ck_Id
+                         from tb_ckinfo tb
+                         where tb.ck_Name  = '主仓库')
+          and sp.sp_lb = (select intb.sblb_id
+                               from tb_sblb intb 
+                               where intb.sblb_name = '饮料类')
+  --2 商品变动
+    --"商品编号", "商品名称", "库存量",
+    --"进货数量", "退货数量(进货)","合计数量",
+    --"销售数量", "退货数量(销售)","合计数量"
+   --不带日期
+  select inb.spid, inb.spn, inb.spkc, inb.xsSum,
+         inb.thSum, inb.heji, inb.khxSum, khthb.thSum,
+          (inb.khxSum - khthb.thSum)
+    from 
+      ( select xsthb.spid spid,xsthb.spn spn ,xsthb.spkc spkc,xsthb.xsSum xsSum,
+               xsthb.thSum thSum ,xsthb.heji heji ,khxs.khxSum khxSum
+           from (select spid,spn,spkc,xsSum, 
+                     xst.thSum thSum,(xsSum-xst.thSum) heji
+                    from (select sp.sp_id spid,sp.sp_name spn ,
+                                 sp.sp_zdkc spkc,xsb.xsSum xsSum
+                             from tb_spinfo sp,(select cg.cgd_spid xsid, 
+                                                        sum(cg.cgd_num) xsSum
+                                                   from tb_cg_detail cg 
+                                                   group by cg.cgd_spid) xsb
+                             where sp.sp_id = xsb.xsid(+)) intb,
+                       (select thd.thd_spid thid,sum(thd.thd_num) thSum
+                          from tb_th_detail thd
+                          group by thd.thd_spid) xst
+                    where intb.spid = xst.thid(+)) xsthb,
+          (select kxsb.xsd_id spid,sum(kxsb.xsd_num) khxSum
+               from tb_sell_detail kxsb
+               group by kxsb.xsd_id) khxs
+         where xsthb.spid = khxs.spid(+)) inb,
+     (select khthd.khthd_thxdid thid,
+            sum(khthd.khthd_num) thSum
+         from tb_khth_detail khthd
+         group by khthd.khthd_thxdid) khthb
+     where inb.spid = khthb.thid(+)
+    ---------------------------------------------------------
+    --2 商品变动(带日期)
+    --"商品编号", "商品名称", "库存量",
+    --"进货数量", "退货数量(进货)","合计数量",
+    --"销售数量", "退货数量(销售)","合计数量"
+  select sp.sp_id,sp.sp_name,sp.sp_zdkc,
+        alltb.cgSum,alltb.cgtSum,(alltb.cgSum - alltb.cgtSum) cgheji,
+        alltb.xsSum,alltb.xstSum,(alltb.xsSum - alltb.xstSum ) xsheji 
+  from (select asp.id id,asp.cgSum cgSum,asp.cgtSum cgtSum,
+        asp.xsSum xsSum,xstb.xstSum xstSum 
+  from (select asp.id id,asp.cgSum cgSum,asp.cgtSum cgtSum,xst.xsSum xsSum
+   from(select asp.id id,asp.cgSum cgSum,cgt.cgtSum cgtSum
+     from (select sp.sp_id id,cgt.cgSum cgSum
+         from tb_spinfo sp,(   
+          select cgd.cgd_spid spid,sum (cgd.cgd_num) cgSum
+           from tb_cg_main cgm,tb_cg_detail cgd
+           where cgm.cg_id  = cgd.cgd_spdh
+           and (cgm.cg_date - to_date('2010-5-30','yyyy-mm-dd')) >= 0 
+           and (to_date('2010-12-30','yyyy-mm-dd') - cgm.cg_date) >= 0
+          group by cgd.cgd_spid) cgt
+         where sp.sp_id = cgt.spid(+)) asp,
+      (select cgtd.thd_spid cgtid,sum(cgtd.thd_num) cgtSum
+         from tb_th_main cgtm,tb_th_detail cgtd
+         where cgtm.th_id = cgtd.thd_spdh
+         and (cgtm.th_date - to_date('2010-5-30','yyyy-mm-dd')) >= 0 
+         and (to_date('2010-12-30','yyyy-mm-dd') - cgtm.th_date) >= 0
+         group by cgtd.thd_spid ) cgt 
+    where asp.id = cgt.cgtid(+)) asp,
+  (select xsd.xsd_id spid,sum(xsd.xsd_num) xsSum
+         from tb_sell_main xs,tb_sell_detail xsd
+         where xs.xs_id = xsd.xsd_dh
+         and (xs.xs_xsdate - to_date('2010-5-30','yyyy-mm-dd')) >= 0 
+         and (to_date('2010-12-30','yyyy-mm-dd') - xs.xs_xsdate) >= 0
+         group by xsd.xsd_id ) xst
+   where asp.id = xst.spid(+)) asp,
+    (select xstd.khthd_thxdid spn ,sum(xstd.khthd_num) xstSum
+         from tb_khth_main xsth,tb_khth_detail xstd
+         where xsth.kh_th_id  = xstd.khthd_dh
+         and (xsth.kh_th_date - to_date('2010-5-30','yyyy-mm-dd')) >= 0 
+         and (to_date('2010-12-30','yyyy-mm-dd') - xsth.kh_th_date) >= 0
+         group by xstd.khthd_thxdid ) xstb
+   where asp.id = xstb.spn(+)) alltb, tb_spinfo sp
+ where sp.sp_id = alltb.id
+ and (sp.sp_id like '%%' or sp.sp_name like '%%')
+ and not (alltb.cgSum = 0 and alltb.cgtSum = 0 
+      and alltb.xsSum = 0 and alltb.xstSum = 0);
+
+
+--库存查询中的查看明细
+
+--"日期", "单据号", "说明(单据类型)", "供货商/客户","入库数",
+-- "出库数","单价(元)","总金额(元)","仓库","经办人","操作员"
+
+
+--1 采购
+   select cg.cg_date,cg.cg_id,'采购入库',ghs.ghs_name,inb.num,
+          0,inb.spdj,inb.zje,ck.ck_name,cg.cg_jbr,cg.cg_czy
+    from tb_cg_main cg,tb_ckinfo ck,tb_ghsinfo ghs,
+     ( select cgd.cgd_spdh dh,cgd.cgd_num num ,(sp.sp_jj*cgd.cgd_num) zje,sp.sp_jj spdj
+        from tb_cg_detail cgd ,tb_spinfo sp 
+        where cgd.cgd_spid = sp.sp_id
+        and cgd.cgd_spid = '5100001' ) inb
+    where cg.cg_id = inb.dh and
+      cg.cg_lkid = ck.ck_id 
+      and (cg.cg_date - to_date('2010-7-30','yyyy-mm-dd')) >= 0 
+      and (to_date('2010-12-30','yyyy-mm-dd') - cg.cg_date) >= 0 
+      and ck.ck_name = '主仓库'
+      and ghs.ghs_id = cg.cg_ghs;
+   
+      
+--"日期", "单据号", "说明(单据类型)", "供货商/客户","入库数",
+-- "出库数","单价(元)","总金额(元)","仓库","经办人","操作员"  
+ --2 采购退货
+   select th.th_date,th.th_id,'采购退货',ghs.ghs_name,0,
+          inb.num,inb.spdj,inb.zje,ck.ck_name,th.th_jbr,th.th_czy
+    from  tb_th_main th,tb_ckinfo ck,tb_ghsinfo ghs,
+     ( select thd.thd_spdh dh,thd.thd_num num ,(sp.sp_jj*thd.thd_num) zje,sp.sp_jj spdj
+        from tb_th_detail thd ,tb_spinfo sp 
+        where thd.thd_spid = sp.sp_id 
+        and thd.thd_spid like '%51%') inb
+    where th.th_id = inb.dh and
+      th.th_ckid = ck.ck_id 
+      and (th.th_date - to_date('2010-7-30','yyyy-mm-dd')) >= 0 
+      and (to_date('2010-12-30','yyyy-mm-dd') -th.th_date) >= 0
+       and ck.ck_name = '主仓库'
+       and ghs.ghs_id = th.th_ghs;
+      
+      
+      
+--"日期", "单据号", "说明(单据类型)", "供货商/客户","入库数",
+-- "出库数","单价(元)","总金额(元)","仓库","经办人","操作员"   
+  --3销售出库
+   select xs.xs_xsdate,xs.xs_id,'销售出库',kh.kh_name,0,
+          inb.num,inb.spdj,inb.zje,ck.ck_name,xs.xs_jbr,xs.xs_czy
+    from tb_sell_main xs,tb_ckinfo ck,tb_khinfo kh,
+     ( select xsd.xsd_dh dh,xsd.xsd_num num ,(xsd.xsd_num*sp.sp_sj) zje,sp.sp_sj spdj
+        from tb_sell_detail xsd ,tb_spinfo sp 
+        where xsd.xsd_id = sp.sp_id 
+        and xsd.xsd_id like '%51%') inb
+    where xs.xs_id = inb.dh and xs.xs_khid = kh.kh_id 
+      and ck.ck_id = xs.xs_chname 
+      and (xs.xs_xsdate - to_date('2010-7-30','yyyy-mm-dd')) >= 0
+      and (to_date('2010-12-30','yyyy-mm-dd') - xs.xs_xsdate) >= 0
+       and ck.ck_name = '主仓库';
+      
+      
+       
+    
+--"日期", "单据号", "说明(单据类型)", "供货商/客户","入库数",
+-- "出库数","单价(元)","总金额(元)","仓库","经办人","操作员"
+   --4 销售退货
+   select th.kh_th_date,th.kh_th_id,'销售退货',kh.kh_name,0,
+          inb.num,inb.spdj,inb.zje,th.kh_th_chname,th.kh_th_jbr,th.kh_th_czy
+    from tb_khth_main th,tb_ckinfo ck,tb_khinfo kh,
+     ( select thd.khthd_dh dh,thd.khthd_num num ,
+              (thd.khthd_num*sp.sp_sj) zje,sp.sp_sj spdj
+        from tb_khth_detail thd ,tb_spinfo sp
+        where thd.khthd_thxdid = sp.sp_id 
+        and thd.khthd_thxdid like '%51%') inb
+    where th.kh_th_id = inb.dh and kh.kh_id = th.kh_th_name 
+       and ck.ck_id = th.kh_th_chname 
+      and (th.kh_th_date - to_date('2010-7-30','yyyy-mm-dd')) >= 0 
+      and (to_date('2010-12-30','yyyy-mm-dd') - th.kh_th_date) >= 0  
+       and ck.ck_name = '主仓库';
+      
+         
+    
+--"日期", "单据号", "说明(单据类型)", "供货商/客户","入库数",
+-- "出库数","单价(元)","总金额(元)","仓库","经办人","操作员"
+   --5 库存调拔
+   select tb.kctb_tbdate,tb.kctb_ckid,'库存调拔',' ',inb.num,
+          inb.num,inb.spdj,inb.zje,ck.ck_name,tb.kctb_jbr,tb.kctb_czy
+    from tb_kctb_main tb,tb_ckinfo ck,
+     ( select tbd.kctbd_tbdh dh,tbd.kctbd_num num ,
+             (tbd.kctbd_num*sp.sp_jj) zje,sp.sp_jj spdj
+        from tb_kctb_detail tbd ,tb_spinfo sp 
+        where  tbd.kctbd_spId = sp.sp_id
+        and tbd.kctbd_spid like '%51%' ) inb
+    where tb.kctb_id  = inb.dh and
+      tb.kctb_ckid = ck.ck_id 
+      and (tb.kctb_tbdate - to_date('2010-7-30','yyyy-mm-dd')) >= 0 
+      and (to_date('2010-12-30','yyyy-mm-dd') - tb.kctb_tbdate) >= 0
+       and ck.ck_name = '主仓库';
+      
+      
+         
+    
+--"日期", "单据号", "说明(单据类型)", "供货商/客户","入库数",
+-- "出库数","单价(元)","总金额(元)","仓库","经办人","操作员"
+   --6 商品报损
+   select bs.bs_date,bs.bs_id,'商品报损','',0,inb.num,
+          inb.spdj,inb.zje,ck.ck_name,bs.bs_jbr,bs.bs_czy
+    from tb_bs_main bs,tb_ckinfo ck,
+     ( select bsd.bsd_xbid dh,bsd.bsd_num num,(bsd.bsd_num*sp.sp_jj) zje,sp.sp_jj spdj
+        from tb_bs_detail bsd ,tb_spinfo sp 
+        where bsd.bsd_xspid = sp.sp_id
+         and bsd.bsd_xspid like '%51%') inb
+    where bs.bs_id = inb.dh and
+      bs.bs_ck = ck.ck_id 
+      and (bs.bs_date - to_date('2010-7-30','yyyy-mm-dd')) >= 0 
+      and (to_date('2010-12-30','yyyy-mm-dd') - bs.bs_date) >= 0
+       and ck.ck_name = '主仓库';
+      
+      
+            
+    
+--"日期", "单据号", "说明(单据类型)", "供货商/客户","入库数",
+-- "出库数","单价(元)","总金额(元)","仓库","经办人","操作员" 
+   --7 商品报益
+   
+   select byt.by_date,byt.by_id,'商品报益',' ',inb.num,
+          0,inb.spdj,inb.zje,ck.ck_name,byt.by_jbr,byt.by_czy
+    from tb_by_main byt,tb_ckinfo ck,
+     ( select byd.byd_cdid dh,byd.byd_num num,
+              (byd.byd_num*sp.sp_jj) zje,sp.sp_jj spdj
+        from tb_by_detail byd ,tb_spinfo sp 
+        where byd.byd_spid = sp.sp_id 
+           and byd.byd_spid like '%51%') inb
+    where byt.by_id = inb.dh and byt.by_ck = ck.ck_id 
+      and (byt.by_date - to_date('2010-7-30','yyyy-mm-dd')) >= 0 
+      and (to_date('2010-12-30','yyyy-mm-dd') - byt.by_date) >= 0
+       and ck.ck_name = '主仓库';
+      
+      
+         
+    
+--"日期", "单据号", "说明(单据类型)", "供货商/客户","入库数",
+-- "出库数","单价(元)","总金额(元)","仓库","经办人","操作员"
+    --8  商品折分
+   select cf.cf_date,cf.cf_id,'商品折分',' ',0,
+          cf.cf_cfnum,sp.sp_jj,(sp.sp_jj*cf.cf_cfnum) zje,
+          ck.ck_name,cf.cf_jbr,cf.cf_czy
+    from tb_cf_main cf,tb_ckinfo ck,tb_spinfo sp
+    where cf.cf_bcfspid = sp.sp_id and cf.cf_lk = ck.ck_id 
+       and cf.cf_bcfspid = '%51%'
+      and (cf.cf_date - to_date('2010-7-30','yyyy-mm-dd')) >= 0 
+      and (to_date('2010-12-30','yyyy-mm-dd') - cf.cf_date) >= 0 
+       and ck.ck_name = '主仓库';
+      
+      
+      
+      
+ --"日期", "单据号", "说明(单据类型)", "供货商/客户","入库数",
+-- "出库数","单价(元)","总金额(元)","仓库","经办人","操作员"
+    --9 商品捆绑
+   select kb.kb_date,kb.kb_id,'商品捆绑',' ',kb.kb_num,
+          0,sp.sp_jj,(sp.sp_jj*kb.kb_num) zje,
+          ck.ck_name,kb.kb_jbr,kb.kb_czy
+    from tb_kb_main kb,tb_ckinfo ck,tb_spinfo sp
+    where kb.kb_cspid = sp.sp_id and kb.kb_ck = ck.ck_id 
+       and kb.kb_cspid = '%51%'
+      and (kb.kb_date - to_date('2010-7-30','yyyy-mm-dd')) >= 0 
+      and (to_date('2010-12-30','yyyy-mm-dd') - kb.kb_date) >= 0 
+       and ck.ck_name = '主仓库';
+    
+    
+    
+    
+  --3 商品信息查询
+  --"商品编号", "商品名称", "进货价",
+  --"销售价","单位", "规格型号","颜色","生产厂商","备注"   
+     
+    select sp.sp_id,sp.sp_name,sp.sp_jj,
+           sp.sp_sj,sp.sp_dw,sp.sp_ggxh,sp.sp_color,
+           sp.sp_sccs,sp.sp_bz
+       from tb_spinfo sp
+       where (sp.sp_id like '%%' or sp.sp_name like '%%') 
+         and sp.sp_syck = (select tb.ck_Id
+                         from tb_ckinfo tb
+                         where tb.ck_Name  = '主仓库')
+  
+  
+  
+   
+ ----------------------------系统设置---商品管理------------------------
+  --"商品编号", "商品名称", "类别",	"商品条码","单位",
+ -- "单位关系","规格型号","颜色","保质期(天)","状态","是否特价商品",
+	--	"最低库存","预设进价", "预设售价","商品折扣","生产厂商","备注"
+  
+  select sp.sp_id,sp.sp_name,lb.sblb_name,sp.sp_tm,
+         sp.sp_dw,sp.sp_dwgx,sp.sp_ggxh,sp.sp_color,
+         (sp.sp_tjdateto - sp.sp_tjdatefrom) 保质期,
+         sp.sp_isuse,sp.sp_sftj,sp.sp_zdkc,sp.sp_jj,
+         sp.sp_sj,sp.sp_zk,sp.sp_sccs,sp.sp_bz
+     from tb_spinfo sp,tb_sblb lb
+     where sp.sp_lb = lb.sblb_id
+     and (sp.sp_id like '%%' or sp.sp_name like '%%')
+     and lb.sblb_name = '酒类';
+     
+     
+  ----------------------------系统设置---商品调价------------------------    
+  -- 1 商品基本信息
+   --"商品编号", "商品名称", "单价","预设进价", "预设售价",
+   --"规格型号","颜色","最低库存", "是否特价商品",
+   --"会员价","特价","特价期限","开始日期","结束日期",
+   --"暂停使用否"," 打折率","生产厂商","备注"  
+  
+      select sp.sp_id,sp.sp_name,sp.sp_sj,sp.sp_jj,sp.sp_sj,
+             sp.sp_ggxh,sp.sp_color,sp.sp_zdkc,
+             sp.sp_sftj,sp.sp_hyj,sp.sp_tj,
+             (sp.sp_tjdateto-sp.sp_tjdatefrom) 特价期限,sp.sp_tjdatefrom,
+             sp.sp_tjdateto,sp.sp_isuse,sp.sp_dzl,sp.sp_sccs,sp.sp_bz
+        from tb_spinfo sp,tb_sblb lb
+        where sp.sp_lb = lb.sblb_id
+         and (sp.sp_name like '%%' or sp.sp_id like '%%')
+         and lb.sblb_name = '';
+  
+     
+  -- -------------------------------2 商品客户消费信息----------------
+   -- "顾客类别","商品名称","零售单价","商品折扣", "顾客折扣",
+   -- "单项折扣","最终折扣", "特价否","顾客特价","最终单价"
+    
+  select hyj.hyjb_name,sp.sp_name,sp.sp_sj,sp.sp_zk,
+           hyj.hyjb_jbzk,'无',(sp.sp_zk*hyj.hyjb_jbzk) 最终折扣,
+           sp.sp_sftj,'0',(sp.sp_sj*(sp.sp_zk*hyj.hyjb_jbzk)) 最终单价
+         
+     from tb_hyjb hyj,tb_spinfo sp
+     where sp.sp_id = '5100001';
+  
+  
+  -- 3 商品调价信息
+  
+  
+     
+ -------------------------------------会员处理
+ -- 1. 会员基本信息查询
+ --"会员编号", "会员姓名", "会员级别", "会员积分", "账户金额",
+ --"总消费额","消费次数","会员状态","积分升级否","使用期限",
+ --"联系电话", "会员生日","加入日期","到期日期","备注"
+ 
+  select hy.hy_id,hy.hy_name,hyj.hyjb_name,hy.hy_jf,
+        hyx.hyxf_xhye,hyx.hyxf_zxf,hyx.hyxf_xfcs,hy.hy_zt,hy.hy_isjfsj,
+        hy.hy_syqx,hy.hy_tell,hy.hy_sr,hy.hy_jldate,
+        hy.hy_jzdate,hy.hy_bz
+      from tb_hyinfo hy,tb_hyjb hyj,tb_hyxfb hyx
+      where (hy.hy_id like '%%' or hy.hy_name like '%%')
+          and hyj.hyjb_id = hy.hy_level 
+          and hy.hy_id = hyx.hyxf_id;
+     
+     
+  --2. 会员续费查询
+      --"交费日期", "会员卡号", "会员姓名",
+      --"续费金额", "实际支付","操作员","备注"
+     
+  select xf.hyxf_jfdate,xf.hyxf_id,hy.hy_name,
+         xf.hyxf_sfje,xf.hyxf_sjzf,xf.hyxf_czy,xf.hyxf_bz
+    from  tb_hyxf xf,tb_hyinfo hy
+    where hy.hy_id = xf.hyxf_id and (hy.hy_id like '%%' or hy.hy_name like '%%')
+      and (xf.hyxf_jfdate - to_date('2010-7-30','yyyy-mm-dd')) >= 0 
+      and (to_date('2010-12-30','yyyy-mm-dd') - xf.hyxf_jfdate) >= 0 
+     
+  
+  
+  --3 会员级别信息("级别编号","级别名称","级别折扣","积分下限","积分上限")
+   
+  select jb.hyjb_id,jb.hyjb_name,jb.hyjb_jbzk,jb.hyjb_jfxx,jb.hyjb_jfsx 
+     from  tb_hyjb jb 
+     where jb.hyjb_id like '%%' or jb.hyjb_name like '%%';
+     
+     
+     
+     
+     
+  --4 修改商品信息
+  update tb_spinfo sp 
+      set sp.sp_lb = ?,sp.sp_tm = ?,sp.sp_dw = ?,
+          sp.sp_jj = ?,sp.sp_sj = ?,sp.sp_ggxh = ?,
+          sp.sp_color = ?,sp.sp_zdkc = ?,sp.sp_sftj = ?,
+          sp.sp_zk = ?,sp.sp_hyj = ?,sp.sp_tj = ?,
+          sp.sp_tjdatefrom = ?,sp.sp_tjdateto = ?,sp.sp_isuse = ?,
+          sp.sp_sccs = ?,sp.sp_bz = ?
+      where sp.sp_id = ?
+     
+     
+ ---------------外连接的测试
+ create table xx(
+    id1 varchar2(4) primary key,
+    name1 varchar2(20)
+   
+ );
+ 
+ insert into xx values('0001','finey');
+ insert into xx values('0002','fariy');
+ insert into xx values('0003','lifke');
+ insert into xx values('0004','lily');
+ 
+ 
+ create table yy(
+    id2 varchar2(4) primary key,
+    name2 varchar2(20)
+   
+ );
+ 
+  insert into yy values('0001','dawagn');
+ insert into yy values('0006','reshen');
+ 
+ --右外连接
+ select xx.id1,xx.name1,yy.name2
+   from xx,yy 
+   where xx.id1 = yy.id2(+);
+ 
+ 
+ 
+
+select *
+   from tb_spinfo sp,tb_sblb lb
+   where sp.sp_lb = lb.sblb_id
+   and sp.sp_id like '%%';
+ 
+ 
+ 
+ ---修改会员信息
+   update tb_hyinfo hy 
+       set hy.hy_name = ? ,hy.hy_level = ?,hy.hy_jf = ?,
+           hy.hy_zt = ?,hy.hy_syqx = ?,hy.hy_sr = ?,
+           hy.hy_tell = ?,hy.hy_jldate = ?,hy.hy_jzdate = ?,
+           hy.hy_isjfsj = ?,hy.hy_bz = ?,hy.hy_secret= ?
+       where hy.hy_id = ?;
+ 
+ --查出一条会员的信息
+ select *
+     	from tb_hyinfo hy,tb_hyjb jb
+     where jb.hyjb_id = hy.hy_level
+     	and hy.hy_id  = 
+ 
+ 
+---会员消费统计
+
+--"卡号","姓名","销费单号", "销售日期", "消费金额",
+--"销费方式","本次积分额","积分余额","操作员","备注"
+    select hy.hy_id,hy.hy_name,pxf.posxfb_id,pxf.posxfb_date,
+           pxf.posxfb_yfje,fs.kh_xffs_name,Floor(pxf.posxfb_yfje/8),
+           Trunc(mod(pxf.posxfb_yfje,8),2),pxf.posxfb_bz
+      from tb_posxfb_main pxf ,tb_hyinfo hy,tb_kh_xffs fs
+      where fs.kh_xffs_id = pxf.posxfb_fkfs 
+         and (hy.hy_id like '%%' or hy.hy_name like '%%')
+         and pxf.posxfb_date between ?  and ? ; 
+
+        
+ --"销费单号", "销售日期", "消费金额","储值卡", "现金",
+ --"银行卡","代金券","本次积分额","操作员","备注"      
+ 
+ 
+ 
+ ---------库存报警
+ --"日期", "单据号","说明", "供货商/客户",
+ --"入库数","出库数","仓库","经办人","操作员"
+ ----销售表
+ select xsm.xs_xsdate,xsm.xs_id,'销售',kh.kh_name,
+        0,inb.num,ck.ck_name,xsm.xs_jbr,xsm.xs_czy  
+   from tb_sell_main xsm, tb_ckinfo ck,tb_khinfo kh , 
+   (select xsd.xsd_num num,xsd.xsd_dh dh  
+      from tb_sell_detail xsd
+      where xsd.xsd_id = '5100002') inb
+   where inb.dh = xsm.xs_id 
+     and ck.ck_id = xsm.xs_chname 
+     and kh.kh_id = xsm.xs_khid
+ 
+ --进货表
+ select cgm.cg_date,cgm.cg_id,'进货',gh.ghs_name,
+        inb.num,0,ck.ck_name,cgm.cg_jbr,cgm.cg_czy  
+   from tb_cg_main cgm, tb_ckinfo ck,tb_ghsinfo gh,  
+   (select cgd.cgd_num num,cgd.cgd_spdh dh  
+      from tb_cg_detail cgd
+      where cgd.cgd_spid = '5100002') inb
+   where inb.dh = cgm.cg_id 
+     and ck.ck_id = cgm.cg_lkid 
+     and gh.ghs_id = cgm.cg_ghs 
+ 
+ select from tb_posxfb_main po where po.posxfb_id like ''
+ 
+ 
+ -----------------------pos 处理
+ --多种选择时
+ --"商品编号","商品名称","商品条码","单位","规格型号","颜色","是否特价"
+ 
+ select sp.sp_id,sp.sp_name,sp.sp_tm,sp.sp_dw,
+        sp.sp_ggxh,sp.sp_color,sp.sp_sftj 
+    from tb_spinfo sp ,tb_ckinfo ck
+    where sp.sp_id like '%02%' or sp.sp_name like '%02%'
+     and ck.ck_id = sp.sp_syck and ck.ck_name = 'ckName'
+ 
+ --加入的商品
+ --"序号","商品编号","商品名称","单位",
+ --"原单价","折扣","折后单价","数量","金额"
+ 
+ select sp.sp_id,sp.sp_name,sp.sp_dw,
+        sp.sp_dj,sp.sp_zk,(sp.sp_zk*sp.sp_dj),1,(sp.sp_zk*sp.sp_dj)
+    from tb_spinfo sp ,tb_ckinfo ck
+    where sp.sp_id = ''
+    and ck.ck_id = sp.sp_syck and ck.ck_name = 'ckName'
+ 
+ 
+ --------------------销售管理里面的POS销售统计
+   -----------会员消费统计 
+ -- "销售单号","销售日期","会员编号","会员姓名",
+  --"消费金额","销费方式","操作员","备注"
+ 
+ select pxf.posxfb_id,pxf.posxfb_date,hy.hy_id,hy.hy_name,
+     pxf.posxfb_yfje,fs.kh_xffs_name,pxf.posxfb_czy,pxf.posxfb_bz
+      from tb_posxfb_main pxf ,tb_hyinfo hy,tb_kh_xffs fs
+      where fs.kh_xffs_id = pxf.posxfb_fkfs 
+         and hy.hy_id = pxf.posxfb_gkjb
+         and (hy.hy_id like '%%' or hy.hy_name like '%%')
+         and pxf.posxfb_date between ?  and ? ; 
+         
+------商品详细
+--"商品编号","商品名称","单价","打折率","数量","总金额","单位","规格型号","颜色"
+         
+
+
+--"商品编号","商品名称","数量","金额"
+   select sp.sp_id,sp.sp_name,inb.num,(sp.sp_dj*inb.num) 总金额
+     from tb_spinfo sp, 
+     ( select pxfd.posxfbd_spid spid, sum(pxfd.posxfbd_num) num
+        from tb_posxfb_detail pxfd,tb_posxfb_main pxfm
+        where pxfm.posxfb_id = pxfd.posxfbd_id 
+        and pxfm.posxfb_date between ? and ? 
+        group by pxfd.posxfbd_spid ) inb
+     where sp.sp_id = inb.spid
+     and (sp.sp_id like '%%' or sp.sp_name like '%%') 
+     order by inb.num desc
+         
+ ------------------------POS 商品销售行 -------------       
+    --1"商品编号","商品名称","销售数量","总销售额","利润","毛利率(%)"
+   select sp.sp_id,sp.sp_name,inb.num,(sp.sp_dj*inb.num) 总金额,
+          ((sp.sp_dj*inb.num)-(sp.sp_jj*inb.num)) ,
+          Trunc(((((sp.sp_dj*inb.num)-(sp.sp_jj*inb.num))/(sp.sp_dj*inb.num))*100),2)
+     from tb_spinfo sp, 
+     ( select pxfd.posxfbd_spid spid, sum(pxfd.posxfbd_num) num  
+        from tb_posxfb_detail pxfd,tb_posxfb_main pxfm  
+        where pxfm.posxfb_id = pxfd.posxfbd_id 
+        and pxfm.posxfb_date between ? and ? 
+        group by pxfd.posxfbd_spid ) inb  
+     where sp.sp_id = inb.spid  
+     and (sp.sp_id like '%%' or sp.sp_name like '%%') 
+     order by inb.num desc 
+    
+    ----2."收银员编号","收银员名称","销售数量","总销售额","利润","毛利率(%)"
+select  usert.user_id,usert.user_name,inb.num,inb.zje,
+        inb.liren, Trunc(inb.liren/inb.zje,2) 毛利率
+ from tb_usernofo usert,
+ (select pxfm.posxfb_czy czy,sum(pxfm.posxfb_sfje) zje,
+        sum(inb.num) num,sum(inb.liren) liren
+   from tb_posxfb_main pxfm,
+   (select inb.id id,sum(inb.num) num,sum(inb.liren) liren
+     from
+     ( select pxfd.posxfbd_id id ,pxfd.posxfbd_num num,
+             ((sp.sp_dj*pxfd.posxfbd_num)-(sp.sp_jj*pxfd.posxfbd_num)) liren
+        from tb_posxfb_detail pxfd ,tb_spinfo sp
+        where pxfd.posxfbd_spid = sp.sp_id) inb
+     group by inb.id) inb   
+    where pxfm.posxfb_id = inb.id
+    and pxfm.posxfb_date between ? and ? 
+    group by pxfm.posxfb_czy) inb
+ where usert.user_id = inb.czy
+  and (usert.user_name like '%%' or usert.user_id like '%%')
+  order by inb.zje
+    
+ 
+ 
+    --3."类别编号","类别名称","销售数量","总销售额","利润","毛利率(%)"
+         
+select lb.sblb_id,lb.sblb_name,inb.num,inb.zje,
+       inb.liren,Trunc(inb.liren/inb.zje,2)
+from tb_sblb lb,
+ (select inb.lb,sum(inb.num) num,sum(inb.zje) zje,sum(inb.liren) liren
+   from 
+    ( select sp.sp_lb lb,inb.num num,(sp.sp_dj*inb.num) zje,
+          ((sp.sp_dj*inb.num)-(sp.sp_jj*inb.num)) liren 
+     from tb_spinfo sp, 
+     ( select pxfd.posxfbd_spid spid, sum(pxfd.posxfbd_num) num  
+        from tb_posxfb_detail pxfd,tb_posxfb_main pxfm  
+        where pxfm.posxfb_id = pxfd.posxfbd_id 
+        and pxfm.posxfb_date between ? and ? 
+        group by pxfd.posxfbd_spid ) inb  
+     where sp.sp_id = inb.spid ) inb
+  group by inb.lb ) inb
+ where lb.sblb_id = inb.lb   
+ and (lb.sblb_id like '%%' or lb.sblb_name like '%%')
+    
+     
+  ----------POS销售流水账(日期，收银员，经办人)
+--"销售日期","销售单号","总金额","付款方式","优惠金额","收银员","经办人"    
+    
+    
+    select xs.posxfb_date,xs.posxfb_id,xs.posxfb_yfje,fs.kh_xffs_name,
+           (xs.posxfb_yfje-xs.posxfb_sfje),sy.user_name,jb.yg_name
+      from  tb_posxfb_main xs,tb_usernofo sy,tb_yginfo jb,tb_kh_xffs fs
+      where sy.user_id = xs.posxfb_czy 
+       and jb.yg_id = xs.posxfb_jbr and xs.posxfb_fkfs = fs.kh_xffs_id
+       and ( sy.user_name like '%%' or jb.yg_name like '%%')
+       and  xs.posxfb_date between ? and ? 
+
+  
+    
+
+--------------销售明细(日期，单据号,会员)
+    -- "销售时间","单据号","会员编号","会员名称",
+    --"商品编号","商品名称","单价","打折率","数量",
+    --"总金额","单位","规格型号","颜色","销售备注"
+     
+    
+    
+    select xs.posxfb_date,xs.posxfb_id,hy.hy_id,hy.hy_name,
+           sp.sp_id,sp.sp_name,sp.sp_dj,sp.sp_zk,xsm.posxfbd_num,
+           (sp.sp_dj*xsm.posxfbd_num),sp.sp_dw,sp.sp_ggxh,sp.sp_color,
+           sp.sp_bz
+      from  tb_posxfb_main xs,tb_spinfo sp,tb_hyinfo hy,tb_posxfb_detail xsm
+      where xs.posxfb_id = xsm.posxfbd_id
+       and xsm.posxfbd_spid = sp.sp_id
+       and xs.posxfb_gkjb = hy.hy_id
+       and (hy.hy_id like '%%' or hy.hy_name like '%%')
+       and  xs.posxfb_date between ? and ? 
+    
+    
+ ----------------------收银员查询(日期，收银员名称)
+ --"收银员编号","收银员名称","应收金额","实收金额"
+ 
+ select sy.user_id,sy.user_name,inb.yssum,inb.sssum
+  from tb_usernofo sy,
+   (select xs.posxfb_czy czy,sum(xs.posxfb_yfje) yssum, 
+           sum(xs.posxfb_sfje) sssum
+     from tb_posxfb_main xs
+    where  xs.posxfb_date between ? and ?
+     group by xs.posxfb_czy) inb
+  where sy.user_id = inb.czy
+   and sy.user_name like '%%'   
+      
+     
+     
+-- "销售单号","销售日期","应收金额","实收金额"
+      
+    select xs.posxfb_id,xs.posxfb_date,
+           xs.posxfb_yfje,xs.posxfb_sfje
+      from tb_posxfb_main xs
+      where xs.posxfb_czy = 
+         (select sy.user_id 
+           from tb_usernofo sy 
+           where sy.user_name = 'pos')
+    
+ ---------------- 日结
+       
+select rj.dayc_id,rj.dayc_date,rj.dayc_num,
+       rj.dayc_zje,sy.user_name
+   from tb_dayCount rj,tb_usernofo sy
+   where  rj.dayc_czy = sy.user_id
+     and (rj.dayc_id like '%%' or sy.user_name like '%%')  
+     and rj.dayc_date between ? and ?  
+    
+   
+update  tb_usernofo tb 
+  set tb.user_name = ?,tb.user_psw = ?,
+      tb.user_srzw = ?,tb.user_ispos = ?  
+  where tb.user_id = ?
+  
+
+insert into tb_hyxf values(sysdate,?,?,?,?,null);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
